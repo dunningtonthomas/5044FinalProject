@@ -31,11 +31,17 @@ u_nom_mat = ones(length(times), 4) .* u_nom';
 
 % Simulate the discrete model with an initial perturbation
 dx0 = [0.1; 0.1; 0.1; 0.1; 0.1; 0.1];
+dx0 = 0.5 .* ones(6, 1);
 %dx0 = [0; 0; 0; 0; 0; 0];
 [XOUT_DT, YOUT_DT] = simulateDT(x_nom_mat, u_nom_mat, dx0, times);
-plotSim(times, XOUT_DT)
+
+% Simulate full nonlinear EOM
+x_init = x_nom + dx0;
+[~, XOUT_NL] = ode45(eomFunc, times, x_init);
+
 
 % Plot
-%plotSim(TOUT, YOUT)
+plotSim(times, XOUT_DT, '-')
+plotSim(times, XOUT_NL, '--')
 
 
