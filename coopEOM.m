@@ -14,7 +14,7 @@ function xdot = coopEOM(t, x, u)
 % Modified: 12/2/2024
 
 % Separation length
-L = 5;
+L = 0.5;
 
 % UGV EOM
 v_g = u(1); theta_g = x(3); phi_g = u(2);
