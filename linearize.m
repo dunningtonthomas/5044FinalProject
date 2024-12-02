@@ -39,6 +39,8 @@ B = [cos(theta_g), 0, 0, 0;
     0, 0, sin(theta_a), 0;
     0, 0, 0, 1];
 
+
+% ADD PROPER JACOBIANS HERE, THESE ARE PLACEHOLDERS
 C = [0, 0, 0, 0, 0, 0;
     0, 0, 0, 0, 0, 0;
     0, 0, 0, 0, 0, 0;
