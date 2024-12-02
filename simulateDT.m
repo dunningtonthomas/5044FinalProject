@@ -41,8 +41,8 @@ for i = 1:length(times)-1
     [F, G, H, M] = discretize(A, B, C, D, dt);
 
     % Simulate DT dynamics
-    xk(i+1, :) = (F*xk(i, :)' + G*u_nom)';
-    YOUT(i, :) = (H*xk(i, :)' + M*u_nom)';
+    xk(i+1, :) = (F*xk(i, :)')';
+    YOUT(i, :) = (H*xk(i, :)')';
 
     % Add the perturbation to the nominal trajectory
     XOUT(i+1, :) = xk(i+1, :) + x_nom_mat(i+1,:);
