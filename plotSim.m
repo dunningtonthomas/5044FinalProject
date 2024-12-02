@@ -1,6 +1,15 @@
 function plotSim(TOUT, YOUT)
 %PLOTSIM Plots the 2D positions of the UGV and UAV and a 3x2 subplot of the
 %states over time
+% 
+% Inputs:
+%   TOUT -> time vector
+%   YOUT -> length(TOUT) by 6 state matrix, each column is a state over
+%   time
+%
+% Output:
+%   plot 1 -> 2D positions of UAV and UGV
+%   plot 2 -> 3x2 subplot of each state over time
 
 % Define colors for better visualization
 ugv_color = [0, 0.4470, 0.7410]; % UGV color
