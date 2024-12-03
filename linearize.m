@@ -41,11 +41,11 @@ B = [cos(theta_g), 0, 0, 0;
 
 
 % ADD PROPER JACOBIANS HERE, THESE ARE PLACEHOLDERS
-C = [0, 0, 0, 0, 0, 0;
-    0, 0, 0, 0, 0, 0;
-    0, 0, 0, 0, 0, 0;
-    0, 0, 0, 0, 0, 0;
-    0, 0, 0, 0, 0, 0];
+C = [(eta_a-eta_g)/((eta_a-eta_g)^2+(xi_a-xi_g)^2), -(xi_a-xi_g)/((eta_a-eta_g)^2+(xi_a-xi_g)^2), -1, -(eta_a-eta_g)/((eta_a-eta_g)^2+(xi_a-xi_g)^2), (xi_a-xi_g)/((eta_a-eta_g)^2+(xi_a-xi_g)^2), 0;
+    (xi_g-xi_a)/(sqrt((xi_g-xi_a)^2+(eta_g-eta_a)^2)), (eta_g-eta_a)/(sqrt((xi_g-xi_a)^2+(eta_g-eta_a)^2)),0,-(xi_g-xi_a)/(sqrt((xi_g-xi_a)^2+(eta_g-eta_a)^2)), -(eta_g-eta_a)/(sqrt((xi_g-xi_a)^2+(eta_g-eta_a)^2)), 0;
+    -(eta_g-eta_a)/((eta_g-eta_a)^2+(xi_g-xi_a)^2), (xi_g-xi_a)/((eta_g-eta_a)^2+(xi_g-xi_a)^2), 0, (eta_g-eta_a)/((eta_g-eta_a)^2+(xi_g-xi_a)^2), -(xi_g-xi_a)/((eta_g-eta_a)^2+(xi_g-xi_a)^2), -1;
+    0, 0, 0, 1, 0, 0;
+    0, 0, 0, 0, 1, 0];
 
 D = [0, 0, 0, 0;
     0, 0, 0, 0;
