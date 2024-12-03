@@ -1,0 +1,28 @@
+function [x_update,P_update]= LKF(x_nom,u_nom,y_nom,dt)
+    %KF This function is a one step Kalman Filter that returns the estimated state and covariance
+    %
+    % Inputs: 
+    %   F,G,H,M     -> DT State Space
+    %   R           -> Sensor Noise Covariance
+    %   Q           -> Process Noise Covariance
+    %   x_meas      -> Last state estimate after the measurement update at time k
+    %   y           -> Measured state at time k+1
+    %   P           -> Last covariance update at time k
+    %   u           -> Control input at time k
+    % Outputs:
+    %   dx_update   -> Estimated state perterbation from the nominal state at time k+1
+    %   dy_update   -> Estimates measurement perterbation from nominal measurement at time k+1
+    %   P_update    -> Estimated state covariance at time k+1
+    %
+    % Author: Owen Craig
+    % Modified: 12/2/2024
+    [A, B, C, D] = linearize(x_nom, u_nom)
+    
+    % Pure Prediction Step
+    x_prediction = F*x_meas+G*u;
+    P_prediction = F*P*F'+Q;
+    K = P_prediction*H'*(H*P_prediction*H'+R)^-1;
+    % Measurement Update Step
+    x_update = x_prediction+K*(y-H*x_prediction);
+    P_update = (eye(size(P_prediction))-K*H)*P_prediction;
+end
