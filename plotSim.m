@@ -16,6 +16,10 @@ function plotSim(TOUT, XOUT, YOUT, linespec)
 % Author: Thomas Dunnington
 % Modified: 12/3/2024
 
+% Angle wrapping
+XOUT(:,3) = mod(XOUT(:,3) + pi, 2*pi) - pi;
+XOUT(:,6) = mod(XOUT(:,6) + pi, 2*pi) - pi;
+
 % Define colors for better visualization
 ugv_color = [0, 0.4470, 0.7410]; % UGV color
 uav_color = [0.8500, 0.3250, 0.0980]; % UAV color
@@ -83,29 +87,37 @@ hold on;
 set(gcf, 'Position', [100, 100, 1200, 800]); % Adjust figure size
 
 
-% Measurement vector
+% Measurement vector plot
 figure(3);
-sgtitle('Measurements')
-subplot(5,1,1)
-plot(TOUT, YOUT(:,1), 'linewidth', 1.5, 'Color', 'k', 'linestyle', linespec)
-ylabel('$\gamma_{ag}$ (rad)', 'Interpreter', 'latex')
+sgtitle('Measurements', 'FontSize', 14, 'FontWeight', 'bold');
 
-subplot(5,1,2)
-plot(TOUT, YOUT(:,2), 'linewidth', 1.5, 'Color', 'k', 'linestyle', linespec)
-ylabel('$\rho_{ga}$ (m)', 'Interpreter', 'latex')
+% Define y-axis labels for each subplot
+ylabels = {
+    '$\gamma_{ag}$ (rad)', ...
+    '$\rho_{ga}$ (m)', ...
+    '$\gamma_{ga}$ (rad)', ...
+    '$\xi_{a}$ (m)', ...
+    '$\eta_{a}$ (m)'
+};
 
-subplot(5,1,3)
-plot(TOUT, YOUT(:,3), 'linewidth', 1.5, 'Color', 'k', 'linestyle', linespec)
-ylabel('$\gamma_{ga}$ (rad)', 'Interpreter', 'latex')
+% Loop through subplots
+for i = 1:5
+    subplot(5, 1, i);
+    plot(TOUT, YOUT(:, i), 'LineWidth', 1.5, 'Color', 'k', 'LineStyle', linespec); % Set line properties
+    ylabel(ylabels{i}, 'Interpreter', 'latex', 'FontSize', 12); % Y-axis label
+    grid on; % Add grid
+    hold on;
+    ytickformat('%.2f'); % Simplify y-axis tick format
+    if i < 5
+        set(gca, 'XTickLabel', []); % Remove x-tick labels for all but the last subplot
+    else
+        xlabel('Time (s)', 'FontSize', 12); % Add x-axis label only on the last subplot
+    end
+end
 
-subplot(5,1,4)
-plot(TOUT, YOUT(:,4), 'linewidth', 1.5, 'Color', 'k', 'linestyle', linespec)
-ylabel('$\xi_{a}$ (m)', 'Interpreter', 'latex')
+% Adjust subplot spacing for better clarity
+set(gcf, 'Position', [100, 100, 800, 600]); % Resize figure for better proportions
 
-subplot(5,1,5)
-plot(TOUT, YOUT(:,5), 'linewidth', 1.5, 'Color', 'k', 'linestyle', linespec)
-ylabel('$\eta_{a}$ (m)', 'Interpreter', 'latex')
-xlabel('Time (s)')
 
 
 end

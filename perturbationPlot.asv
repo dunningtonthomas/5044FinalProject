@@ -15,8 +15,16 @@ function perturbationPlot(TOUT, XOUT, XNOM, linespec)
 % Author: Thomas Dunnington
 % Modified: 12/3/2024
 
+% Calculate the perturbations
+XPERT = XOUT - XNOM;
+
 
 figure();
+subplot(6,1,1)
+plot(TOUT, XPERT, 'linewidth', 1.5, 'color', 'b');
+ylabel('$\delta\xi_{g}$ (m)', 'Interpreter', 'latex')
+
+
 
 
 

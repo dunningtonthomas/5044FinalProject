@@ -1,4 +1,4 @@
-%% MAIN FUNCTION
+%% MAIN FUNCTION PART 1
 close all; clear; clc;
 
 %% Simulate EOM
@@ -27,32 +27,38 @@ u_nom = [u_ugv; u_uav];
 w = zeros(6,1);
 eomFunc = @(t, x)coopEOM(t, x, u_nom, w);
 x_init = x_nom;
-times = (dt:dt:tspan(2))';
-[~, x_nom_mat] = ode45(eomFunc, times, x_init, options);
-u_nom_mat = ones(length(times), 4) .* u_nom';
+TOUT_DT = (dt:dt:tspan(2))';
+[~, x_nom_mat] = ode45(eomFunc, TOUT_DT, x_init, options);
+u_nom_mat = ones(length(TOUT_DT), 4) .* u_nom';
 
 
 % Simulate the discrete model with an initial perturbation
 dx0 = [0; 1; 0; 0; 0; 0.1];
-[XOUT_DT, YOUT_DT] = simulateDT(x_nom_mat, u_nom_mat, dx0, times);
+[XOUT_DT, YOUT_DT] = simulateDT(x_nom_mat, u_nom_mat, dx0, TOUT_DT);
 
 % Simulate full nonlinear EOM
 x_init = x_nom + dx0;
 [TOUT_NL, XOUT_NL] = ode45(eomFunc, tspan, x_init, options);
 
-% Angle wrapping
-XOUT_NL(:,3) = mod(XOUT_NL(:,3) + pi, 2*pi) - pi;
-XOUT_NL(:,6) = mod(XOUT_NL(:,6) + pi, 2*pi) - pi;
-
-% Calculate the measurements from the sensor model
+% Calculate the measurements for the NL simulation
 YOUT_NL = zeros(length(TOUT_NL), 5);
 for i = 1:length(TOUT_NL)
     YOUT_NL(i,:) = sensors(XOUT_NL(i,:))';
 end
 
+% Calculate the measurements for the DT simulation
+% YOUT_DT = zeros(length(TOUT_NL), 5);
+% for i = 1:length(TOUT_NL)
+%     YOUT_NL(i,:) = sensors(XOUT_NL(i,:))';
+% end
 
 % Plot
 %plotSim(times, XOUT_DT, '-')
 plotSim(TOUT_NL, XOUT_NL, YOUT_NL, '-')
+plotSim(TOUT_DT, XOUT_DT, YOUT_DT, '--')
+
+% Plot the perturbations of the linear approximation
+perturbationPlot(TOUT_DT, XOUT_DT, x_nom_mat, '-');
+
 
 
