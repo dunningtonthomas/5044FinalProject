@@ -12,6 +12,9 @@ function plotSim(TOUT, XOUT, YOUT, linespec)
 %   plot 1 -> 2D positions of UAV and UGV
 %   plot 2 -> 3x2 subplot of each state over time
 %   plot 3 -> 5x1 subplot of the measurements with no measurement noise
+%
+% Author: Thomas Dunnington
+% Modified: 12/3/2024
 
 % Define colors for better visualization
 ugv_color = [0, 0.4470, 0.7410]; % UGV color
