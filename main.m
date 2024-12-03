@@ -40,6 +40,7 @@ x_init = x_nom + dx0;
 
 % Angle wrapping
 XOUT_NL(:,3) = mod(XOUT_NL(:,3) + pi, 2*pi) - pi;
+XOUT_NL(:,6) = mod(XOUT_NL(:,6) + pi, 2*pi) - pi;
 
 % Calculate the measurements from the sensor model
 YOUT_NL = zeros(length(TOUT_NL), 5);

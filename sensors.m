@@ -13,9 +13,13 @@ function y = sensors(x)
 % Modified: 12/2/2024
 
 % Azimuth measurements
-xi_g = x(1); eta_g =x(2); theta_g = x(3); xi_a = x(4); eta_a = x(5); theta_a = x(6);
-azimuth_ugv = atan((eta_a - eta_g) / (xi_a - xi_g)) - theta_g;
-azimuth_uav = atan((eta_g - eta_a) / (xi_g - xi_a)) - theta_a;
+xi_g = x(1); eta_g = x(2); theta_g = x(3); xi_a = x(4); eta_a = x(5); theta_a = x(6);
+azimuth_ugv = atan2((eta_a - eta_g), (xi_a - xi_g)) - theta_g;
+azimuth_uav = atan2((eta_g - eta_a), (xi_g - xi_a)) - theta_a;
+
+% Angle wrap measurements
+azimuth_ugv = mod(azimuth_ugv + pi, 2*pi) - pi;
+azimuth_uav = mod(azimuth_uav + pi, 2*pi) - pi;
 
 % Range measurement
 range = sqrt((xi_g - xi_a)^2 + (eta_g - eta_a)^2);

@@ -82,7 +82,7 @@ set(gcf, 'Position', [100, 100, 1200, 800]); % Adjust figure size
 
 % Measurement vector
 figure(3);
-sgtitle('Measurement')
+sgtitle('Measurements')
 subplot(5,1,1)
 plot(TOUT, YOUT(:,1), 'linewidth', 1.5, 'Color', 'k', 'linestyle', linespec)
 ylabel('$\gamma_{ag}$ (rad)', 'Interpreter', 'latex')
