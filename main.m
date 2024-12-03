@@ -2,7 +2,7 @@
 close all; clear; clc;
 
 %% Simulate EOM
-% Constants
+% Ode45 Constants
 dt = 0.1;
 tspan = [0 100];
 options = odeset('RelTol', 1e-8, 'AbsTol', 1e-10);
@@ -22,8 +22,10 @@ u_nom = [u_ugv; u_uav];
 % Find the DT model from the linearized CT model
 [F, G, H, M] = discretize(A, B, C, D, dt);
 
-% Find the nominal trajectory using the full nonlinear equations
-eomFunc = @(t, x)coopEOM(t, x, u_nom);
+% Find the nominal trajectory using the full nonlinear equations with no
+% noise
+w = zeros(6,1);
+eomFunc = @(t, x)coopEOM(t, x, u_nom, w);
 x_init = x_nom;
 times = (dt:dt:tspan(2))';
 [~, x_nom_mat] = ode45(eomFunc, times, x_init, options);
