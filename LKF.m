@@ -1,5 +1,5 @@
-function [x_update,P_update]= LKF(x_nom,u_nom,y_nom,dt)
-    %KF This function is a one step Kalman Filter that returns the estimated state and covariance
+function [x_update,P_update]= LKF(x_nom,u_nom,y_nom,Q,R,dt)
+    % LKF This function is a Linearized Kalman Filter that returns the estimated state, measurements and covariance
     %
     % Inputs: 
     %   F,G,H,M     -> DT State Space
@@ -10,19 +10,23 @@ function [x_update,P_update]= LKF(x_nom,u_nom,y_nom,dt)
     %   P           -> Last covariance update at time k
     %   u           -> Control input at time k
     % Outputs:
-    %   dx_update   -> Estimated state perterbation from the nominal state at time k+1
-    %   dy_update   -> Estimates measurement perterbation from nominal measurement at time k+1
+    %   x_update   -> Estimated state perturbation from the nominal state at time k+1
+    %   y_update   -> Estimates measurement perturbation from nominal measurement at time k+1
     %   P_update    -> Estimated state covariance at time k+1
     %
     % Author: Owen Craig
-    % Modified: 12/2/2024
-    [A, B, C, D] = linearize(x_nom, u_nom)
-    
-    % Pure Prediction Step
-    x_prediction = F*x_meas+G*u;
-    P_prediction = F*P*F'+Q;
-    K = P_prediction*H'*(H*P_prediction*H'+R)^-1;
+    % Modified: 12/3/2024
+    [A, B, C, D] = linearize(x_nom, u_nom);
+    Gamma = eye(size(A));
+    [F,G,Omega,H] = eulerDiscretize(A,B,C,D,Gamma,dt);
+    % Prediction Step
+    % Estimate state perturbation
+    dx = F*dx_update+G*du;
+    P = F*P_update*F'+Omega*Q*Omega;
+    du = u_actual - u_nom;
     % Measurement Update Step
-    x_update = x_prediction+K*(y-H*x_prediction);
-    P_update = (eye(size(P_prediction))-K*H)*P_prediction;
+    dx_update = dx +K*(dy_update-H*dx);
+    P_update = (eye(P)-K*H)*P;
+    K = P*H'*(H*P*H'+R)^-1;
+    dy_update = y_actual-y_nom;
 end
