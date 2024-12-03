@@ -39,7 +39,7 @@ x_init = x_nom + dx0;
 [TOUT_NL, XOUT_NL] = ode45(eomFunc, tspan, x_init, options);
 
 % Angle wrapping
-XOUT_NL(:,3) = mod(XOUT_NL(:,3) + pi, 2*pi) - pi;
+XOUT_NL(:,3) = mod(angle + pi, 2*pi) - pi;
 
 % Calculate the measurements from the sensor model
 YOUT_NL = zeros(length(TOUT_NL), 5);
@@ -50,6 +50,6 @@ end
 
 % Plot
 %plotSim(times, XOUT_DT, '-')
-plotSim(TOUT_NL, XOUT_NL, YOUT_NL, '-')
+plotSim(TOUT_NL, XOUT_NL, YOUT_NL, '--')
 
 
