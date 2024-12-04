@@ -118,14 +118,10 @@ xhat_final = xhat_old;
 
 % Calculate the final covariance
 [~, ~, H, ~] = linearize(xhat_final, zeros(4,1));
-P_final = inv(H'*H);
+P_final = H'
 
 
 % Output the final xhat measurement
 disp('Final Initial State Estimate:');
 disp(xhat_new);
-
-disp('Final Covariance Estimate:');
-disp(P_final);
-
 
