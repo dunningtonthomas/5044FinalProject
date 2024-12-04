@@ -1,6 +1,6 @@
-function [xhat_meas, P_meas] = EKF(xhat_prev, P_prev, u, y, dt, Q, R)
-%EKF This performs a single EKF update with prediction and measurement
-%update steps
+function [xhat_meas, P] = EKF(xhat_prev, P_prev, u, y, dt, Q, R)
+%EKF This performs an EKF update with prediction and measurement
+%updates
 %
 % Inputs: 
 %   xhat_prev -> previous estimate of the full state
@@ -13,15 +13,15 @@ function [xhat_meas, P_meas] = EKF(xhat_prev, P_prev, u, y, dt, Q, R)
 %
 % Outputs:
 %   xhat_meas -> next full state estimate
-%   P_meas -> next covariance
+%   P -> next covariance
 %
 % Author: Thomas Dunnington
 % Modified: 12/3/2024
 
 %% Time update step
-% Deterministic state prediction
+% Deterministic state propagation
 options = odeset('RelTol', 1e-8, 'AbsTol', 1e-10);
-[~, xpred] = ode45(@(t, x)coopEOM(t, x, u, zeros(length(xhat_prev),1)), [0 dt], xhat_prev, options);
+[~, xpred] = ode45(@(t, x)coopEOM(t, x, u, 0), [0 dt], xhat_prev, options);
 xhat_pred = xpred(end, :)';
 
 % Linearization matrices
@@ -43,11 +43,8 @@ yhat_pred = sensors(xhat_pred);
 innovation = y - yhat_pred;
 
 % Kalman gain
-K = P_pred * H' * inv(H * P_pred * H' + R);
+K = P_pred * H' * inv(H * P_pred * H' + R)
 
-% Update state and covariance
-xhat_meas = xhat_pred + K*innovation;
-P_meas = (eye(size(F)) - K*H) * P_pred;
 
 end
 
