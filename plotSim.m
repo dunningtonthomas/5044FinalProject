@@ -5,7 +5,7 @@ function plotSim(TOUT, XOUT, YOUT, linespec)
 % Inputs:
 %   TOUT -> time vector
 %   XOUT -> length(TOUT) by 6 state matrix, each column is a state
-%   YOUT -> length(TOUT) by 5 measurement matrix
+%   YOUT -> length(TOUT)-1 by 5 measurement matrix
 %   linespec -> linestyle of the plot
 %
 % Output:
@@ -103,7 +103,7 @@ ylabels = {
 % Loop through subplots
 for i = 1:5
     subplot(5, 1, i);
-    plot(TOUT, YOUT(:, i), 'LineWidth', 1.5, 'Color', 'k', 'LineStyle', linespec); % Set line properties
+    plot(TOUT(2:end), YOUT(:, i), 'LineWidth', 1.5, 'Color', 'k', 'LineStyle', linespec); % Set line properties
     ylabel(ylabels{i}, 'Interpreter', 'latex', 'FontSize', 12); % Y-axis label
     grid on; % Add grid
     hold on;

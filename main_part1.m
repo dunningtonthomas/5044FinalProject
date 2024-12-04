@@ -27,7 +27,7 @@ u_nom = [u_ugv; u_uav];
 w = zeros(6,1);
 eomFunc = @(t, x)coopEOM(t, x, u_nom, w);
 x_init = x_nom;
-TOUT_DT = (dt:dt:tspan(2))';
+TOUT_DT = (0:dt:tspan(2))';
 [~, x_nom_mat] = ode45(eomFunc, TOUT_DT, x_init, options);
 u_nom_mat = ones(length(TOUT_DT), 4) .* u_nom';
 
@@ -38,19 +38,13 @@ dx0 = [0; 1; 0; 0; 0; 0.1];
 
 % Simulate full nonlinear EOM
 x_init = x_nom + dx0;
-[TOUT_NL, XOUT_NL] = ode45(eomFunc, tspan, x_init, options);
+[TOUT_NL, XOUT_NL] = ode45(eomFunc, TOUT_DT, x_init, options);
 
 % Calculate the measurements for the NL simulation
-YOUT_NL = zeros(length(TOUT_NL), 5);
-for i = 1:length(TOUT_NL)
-    YOUT_NL(i,:) = sensors(XOUT_NL(i,:))';
+YOUT_NL = zeros(length(TOUT_NL)-1, 5);
+for i = 2:length(TOUT_NL)
+    YOUT_NL(i-1,:) = sensors(XOUT_NL(i,:))';
 end
-
-% Calculate the measurements for the DT simulation
-% YOUT_DT = zeros(length(TOUT_DT), 5);
-% for i = 1:length(TOUT_DT)
-%     YOUT_DT(i,:) = sensors(XOUT_DT(i,:))';
-% end
 
 % Plot
 %plotSim(times, XOUT_DT, '-')
