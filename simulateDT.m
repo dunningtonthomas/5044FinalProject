@@ -34,6 +34,7 @@ for i = 1:length(times)-1
     time = times(i);
     x_nom = x_nom_mat(i,:)';
     u_nom = u_nom_mat(i,:)';
+    y_nom = sensors(x_nom)';
 
     % Linearize around the nominal point
     [A, B, C, D] = linearize(x_nom, u_nom);
@@ -47,6 +48,7 @@ for i = 1:length(times)-1
 
     % Add the perturbation to the nominal trajectory
     XOUT(i+1, :) = xk(i+1, :) + x_nom_mat(i+1,:);
+    YOUT(i, :) = yk(i, :) + y_nom;
 end
 
 % Get the last measurement
@@ -60,7 +62,6 @@ u_nom = u_nom_mat(end,:)';
 [F, G, H, M] = discretize(A, B, C, D, dt);
 
 % Simulate DT dynamics
-YOUT(end, :) = (H*xk(end,:)')';
-
+YOUT(end, :) = (H*xk(end,:)')' + y_nom;
 end
 

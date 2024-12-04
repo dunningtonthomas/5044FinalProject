@@ -47,14 +47,14 @@ for i = 1:length(TOUT_NL)
 end
 
 % Calculate the measurements for the DT simulation
-% YOUT_DT = zeros(length(TOUT_NL), 5);
-% for i = 1:length(TOUT_NL)
-%     YOUT_NL(i,:) = sensors(XOUT_NL(i,:))';
+% YOUT_DT = zeros(length(TOUT_DT), 5);
+% for i = 1:length(TOUT_DT)
+%     YOUT_DT(i,:) = sensors(XOUT_DT(i,:))';
 % end
 
 % Plot
 %plotSim(times, XOUT_DT, '-')
-plotSim(TOUT_NL, XOUT_NL, YOUT_NL, '-')
+%plotSim(TOUT_NL, XOUT_NL, YOUT_NL, '-')
 plotSim(TOUT_DT, XOUT_DT, YOUT_DT, '--')
 
 % Plot the perturbations of the linear approximation
