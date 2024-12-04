@@ -1,0 +1,50 @@
+function [xhat_meas, P] = EKF(xhat_prev, P_prev, u, y, dt, Q, R)
+%EKF This performs an EKF update with prediction and measurement
+%updates
+%
+% Inputs: 
+%   xhat_prev -> previous estimate of the full state
+%   P_prev -> previous covariance
+%   u -> control input
+%   y -> measurement vector
+%   dt -> time step
+%   Q -> process noise covariance matrix
+%   R -> measurement noise covariance matrix
+%
+% Outputs:
+%   xhat_meas -> next full state estimate
+%   P -> next covariance
+%
+% Author: Thomas Dunnington
+% Modified: 12/3/2024
+
+%% Time update step
+% Deterministic state propagation
+options = odeset('RelTol', 1e-8, 'AbsTol', 1e-10);
+[~, xpred] = ode45(@(t, x)coopEOM(t, x, u, 0), [0 dt], xhat_prev, options);
+xhat_pred = xpred(end, :)';
+
+% Linearization matrices
+[A, B, C, D] = linearize(xhat_prev, u); % Linearize along the current best state estimate, not the nominal trajectory
+[F, G, Omega, H] = eulerDiscretize(A, B, C, D, eye(size(A)), dt);
+
+% Covariance prediction
+P_pred = F*P_prev*F' + Omega*Q*Omega';  
+
+%% Measurement update step
+% Deterministic nonlinear measurement model evaluation
+yhat_pred = sensors(xhat_pred);
+
+% Linearization matrices at new best estimate
+[A, B, C, D] = linearize(xhat_pred, u);
+[F, G, Omega, H] = eulerDiscretize(A, B, C, D, eye(size(A)), dt);
+
+% Innovation vector
+innovation = y - yhat_pred;
+
+% Kalman gain
+K = P_pred * H' * inv(H * P_pred * H' + R)
+
+
+end
+

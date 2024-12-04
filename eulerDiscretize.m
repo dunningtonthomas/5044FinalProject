@@ -12,9 +12,9 @@ function [F,G,Omega,H] = eulerDiscretize(A,B,C,D,Gamma,dt)
     % Modified: 12/3/2024
 
     % Using Eulers method convert CT perturbation model into DT model (Eq. from lecture 31)
-    F = eye(size(A))+dt*A;
-    G = dt*B;
-    Omega = dt*Gamma;
+    F = eye(size(A))+dt.*A;
+    G = dt.*B;
+    Omega = dt.*Gamma;
     H = C;
 end
 
