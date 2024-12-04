@@ -7,11 +7,11 @@ function [time,x_noise_mat,y_noise_mat] = simulateNoise(x0,u0,Q,R,dt,n_ind)
     %   Q           -> Process Noise Covariance
     %   R           -> Measurement Noise Covariance
     %   dt          -> time step
-    %   n_ind       -> Number of Data Points after the Initial State (if you input 1000 it will return 1000 new points after the initial state so the final output size is 1001)
+    %   n_ind       -> Number of desired time st
     % Outputs:
-    %   time        -> Simulation Time Vector 
-    %   x_noise     -> Simulated State over Time with Process Noise
-    %   y_noise     -> Estimated Standard Deviation at all time steps
+    %   x_est       -> Estimated state for all time steps
+    %   y_update    -> Estimates measurement for all time steps
+    %   sigma       -> Estimated Standard Deviation at all time steps
     %
     % Author: Owen Craig
     % Modified: 12/3/2024
@@ -44,13 +44,13 @@ function [time,x_noise_mat,y_noise_mat] = simulateNoise(x0,u0,Q,R,dt,n_ind)
     x_noise_mat(:,6) = mod(x_noise_mat(:,6) + pi, 2*pi) - pi;
     
     % Calculate the measurements from the sensor model
-    y_noise_mat = zeros(length(time)-1, 5);
-    for i = 2:length(time)
-        y_noise_mat(i-1,:) = sensors(x_noise_mat(i,:))';
+    y_noise_mat = zeros(length(time), 5);
+    for i = 1:length(time)
+        y_noise_mat(i,:) = sensors(x_noise_mat(i,:))';
     end
     % Add Measurement Noise 
     Sv_measurement = chol(R,'lower');
-    q = randn(5,length(time)-1);
+    q = randn(5,length(time));
     y_noise_mat =  y_noise_mat + (Sv_measurement*q)';
 end
 
