@@ -77,11 +77,38 @@ Sv_measurement = chol(R_true,'lower');
 q = randn(5,length(t_noise));
 y_noise_mat =  y_noise_mat + (Sv_measurement*q)';
 
-%% Apply Linearized Kalman Filter
-[x_LKF,sigma]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_true,R_true,dt);
+plotSim(t_noise, x_noise_mat, y_noise_mat, '--')
 
+[time,x_noise_mat,y_noise_mat] = simulateNoise(x_nom,u_nom,Q_true,R_true,dt,1000);
+plotSim(t_noise, x_noise_mat, y_noise_mat, '-')
+
+
+%% Apply Linearized Kalman Filter
+% [x_LKF,sigma]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_true,R_true,dt);
+%% SHould i be using x with noise???
 
 %% Plotting
 % plotSim(t_noise, x_noise_mat, y_noise_mat, '--')
-plotSim(t_nom, x_nom_mat, y_nom_mat, '-')
-plotSim(t_noise(2:end), x_LKF(:,2:end)', y_noise_mat(2:end,:), '-.')
+% plotSim(t_nom, x_nom_mat, y_nom_mat, '-')
+% plotSim(t_noise(2:end), x_LKF(:,2:end)', y_noise_mat(2:end,:), '-.')
+% 
+% x_error = x_LKF' - x_nom_mat;
+% % State labels
+% state_labels = {'\xi_g Error [m]', '\eta_g Error [m]','\theta_g Error [rad]','\xi_a Error [m]','\eta_a Error [m]','\theta_a Error [rad]'};
+% % Plot the error for each state element of xs(k) vs time with ±2σ bounds
+% figure(1);
+% plot_num = 1;
+% for i = 1:6
+%     subplot(3, 2, plot_num);
+%     hold on;
+%     plot(t_noise(2:end), x_error(2:end,i), 'b', 'LineWidth', 1.5); 
+%     plot(t_noise(2:end), 2*sigma(i, 2:end), 'r--', 'LineWidth', 1.2);
+%     plot(t_noise(2:end), -2*sigma(i, 2:end), 'r--', 'LineWidth', 1.2);
+%     xlabel('Time [s]');
+%     ylabel(state_labels{plot_num});
+%     legend('Error', '\pm2\sigma', 'Location', 'best');
+%     title([state_labels{plot_num}, 'Error with \pm2\sigma Bounds']);
+%     grid on;
+%     plot_num =plot_num+1;
+% end
+% sgtitle('Aircrafts Position Estimator Error')
