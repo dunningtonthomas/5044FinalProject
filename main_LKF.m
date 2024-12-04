@@ -77,6 +77,10 @@ Sv_measurement = chol(R_true,'lower');
 q = randn(5,length(t_noise));
 y_noise_mat =  y_noise_mat + (Sv_measurement*q)';
 
+%% Apply Linearized Kalman Filter
+[x_update,P_update]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_true,R_true,dt);
+
+
 %% Plotting
 plotSim(t_noise, x_noise_mat, y_noise_mat, '-')
 plotSim(t_nom, x_nom_mat, y_nom_mat, '--')
