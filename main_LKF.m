@@ -9,7 +9,6 @@ Data = load('cooplocalization_finalproj_KFdata.mat');
 dt = 0.1;
 tspan = [0 100];
 t_nom = (dt:dt:tspan(2))';
-n_ind = length(t_nom)-1;
 options = odeset('RelTol', 1e-8, 'AbsTol', 1e-10);
 
 % Nominal values
@@ -34,45 +33,43 @@ x_nom_mat(:,3) = mod(x_nom_mat(:,3) + pi, 2*pi) - pi;
 x_nom_mat(:,6) = mod(x_nom_mat(:,6) + pi, 2*pi) - pi;
 
 % Calculate the measurements from the sensor model
-y_nom_mat = zeros(length(t_nom), 5);
-for i = 1:length(t_nom)
-    y_nom_mat(i,:) = sensors(x_nom_mat(i,:))';
+y_nom_mat = zeros(length(t_nom)-1, 5);
+for i = 2:length(t_nom)
+    y_nom_mat(i-1,:) = sensors(x_nom_mat(i,:))';
 end
 
 
 %% Simulate Nonlinear Trajectory with Process Noise
 Q_true = Data.Qtrue;
 R_true = Data.Rtrue;
-[time,x_noise_mat,y_noise_mat] = simulateNoise(x_nom,u_nom,Q_true,R_true,dt,1000);
-plotSim(time, x_noise_mat, y_noise_mat, '-')
+[t_noise,x_noise_mat,y_noise_mat] = simulateNoise(x_nom,u_nom,Q_true,R_true,dt,1000);
 
 
 %% Apply Linearized Kalman Filter
-% [x_LKF,sigma]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_true,R_true,dt);
-%% SHould i be using x with noise???
+[x_LKF,sigma]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_true,R_true,dt);
 
 %% Plotting
 % plotSim(t_noise, x_noise_mat, y_noise_mat, '--')
 % plotSim(t_nom, x_nom_mat, y_nom_mat, '-')
-% plotSim(t_noise(2:end), x_LKF(:,2:end)', y_noise_mat(2:end,:), '-.')
-% 
-% x_error = x_LKF' - x_nom_mat;
-% % State labels
-% state_labels = {'\xi_g Error [m]', '\eta_g Error [m]','\theta_g Error [rad]','\xi_a Error [m]','\eta_a Error [m]','\theta_a Error [rad]'};
-% % Plot the error for each state element of xs(k) vs time with ±2σ bounds
-% figure(1);
-% plot_num = 1;
-% for i = 1:6
-%     subplot(3, 2, plot_num);
-%     hold on;
-%     plot(t_noise(2:end), x_error(2:end,i), 'b', 'LineWidth', 1.5); 
-%     plot(t_noise(2:end), 2*sigma(i, 2:end), 'r--', 'LineWidth', 1.2);
-%     plot(t_noise(2:end), -2*sigma(i, 2:end), 'r--', 'LineWidth', 1.2);
-%     xlabel('Time [s]');
-%     ylabel(state_labels{plot_num});
-%     legend('Error', '\pm2\sigma', 'Location', 'best');
-%     title([state_labels{plot_num}, 'Error with \pm2\sigma Bounds']);
-%     grid on;
-%     plot_num =plot_num+1;
-% end
-% sgtitle('Aircrafts Position Estimator Error')
+% plotSim(t_noise, x_LKF', y_noise_mat, '-.')
+
+x_error = x_LKF' - x_nom_mat;
+% State labels
+state_labels = {'\xi_g Error [m]', '\eta_g Error [m]','\theta_g Error [rad]','\xi_a Error [m]','\eta_a Error [m]','\theta_a Error [rad]'};
+% Plot the error for each state element of xs(k) vs time with ±2σ bounds
+figure(1);
+plot_num = 1;
+for i = 1:6
+    subplot(6, 1, plot_num);
+    hold on;
+    plot(t_noise(2:end), x_error(2:end,i), 'b', 'LineWidth', 1.5); 
+    plot(t_noise(2:end), 2*sigma(i, 2:end), 'r--', 'LineWidth', 1.2);
+    plot(t_noise(2:end), -2*sigma(i, 2:end), 'r--', 'LineWidth', 1.2);
+    xlabel('Time [s]');
+    ylabel(state_labels{plot_num});
+    legend('Error', '\pm2\sigma', 'Location', 'best');
+    title([state_labels{plot_num}, 'Error with \pm2\sigma Bounds']);
+    grid on;
+    plot_num =plot_num+1;
+end
+sgtitle('Aircrafts Position Estimator Error')
