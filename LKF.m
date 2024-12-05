@@ -17,7 +17,7 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
     %
     % Author: Owen Craig
     % Modified: 12/3/2024
-    n = length(x_nom);
+    n = length(y_actual);
     H_mat = [];
     Gamma = eye(size(x_nom,1),size(x_nom,1));
     for i = 1:n
@@ -40,7 +40,7 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
     sigma(:,1) = sqrt(diag(P_update));
 
     % Use the lineraized Kalman Filter to estimate the state
-    for i =1:n-1
+    for i =1:n
         % Pure Predition uses F_k and G_k so calculate @ k
         [A, B, C, D] = linearize(x_nom(:,i), u_nom(:,i));
         [F,G,~,~] = eulerDiscretize(A,B,C,D,Gamma,dt);
@@ -54,7 +54,7 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
         du = u_actual(:,i+1) - u_nom(:,i+1);
         % Measurement Update Step
         K = P*H'*(H*P*H'+R)^-1;
-        dx_update = dx +K*(dy_update(:,i+1)-H*dx);
+        dx_update = dx +K*(dy_update(:,i)-H*dx);
         P_update = (eye(size(P))-K*H)*P;
         x_est(:,i+1) = dx_update+x_nom(:,i);
         sigma(:,i+1) = sqrt(diag(P_update));
