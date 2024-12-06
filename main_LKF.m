@@ -63,8 +63,8 @@ for i = 1:6
     subplot(6, 1, plot_num);
     hold on;
     plot(t_noise(2:end), x_error(2:end,i), 'b', 'LineWidth', 1.5); 
-    plot(t_noise(2:end), 2*sigma(i, 2:end), 'r--', 'LineWidth', 1.2);
-    plot(t_noise(2:end), -2*sigma(i, 2:end), 'r--', 'LineWidth', 1.2);
+    plot(t_noise(4:end), 2*sigma(i, 4:end), 'r--', 'LineWidth', 1.2);
+    plot(t_noise(4:end), -2*sigma(i, 4:end), 'r--', 'LineWidth', 1.2);
     xlabel('Time [s]');
     ylabel(state_labels{plot_num});
     legend('Error', '\pm2\sigma', 'Location', 'best');
