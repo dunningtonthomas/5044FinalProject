@@ -17,10 +17,12 @@ u_uav = [12; pi/25];
 x_nom = [x_ugv; x_uav];
 u_nom = [u_ugv; u_uav];
 
+% Time step
+dt = 0.1;
+
 xhat_prev = x_nom;
 u = u_nom;
 y = sensors(xhat_prev);
-dt = 0.1;
 Q = Data.Qtrue;
 R = Data.Rtrue;
 P_prev = [10, 0, 0, 0, 0, 0;
@@ -30,7 +32,13 @@ P_prev = [10, 0, 0, 0, 0, 0;
             0, 0, 0, 0, 10, 0;
             0, 0, 0, 0, 0, pi];
 
-[xhat_meas, P_meas] = EKF(xhat_prev, P_prev, u, y, dt, Q, R);
+%[xhat_meas, P_meas] = EKF(xhat_prev, P_prev, u, y, dt, Q, R);
+
+% Truth model testing, get true state and data
+n_ind = 1000;
+[time_tmt, x_noise_mat, y_noise_mat] = simulateNoise(x_nom, u_nom, Q, R, dt, n_ind);
+
+% Simulate nonlinear equations to get deterministic state trajectory
 
 
 % Nonlinear least squares warm start
@@ -40,14 +48,16 @@ num_measurements = 10;
 R_cells = repmat({R}, 1, num_measurements);
 Rbig = blkdiag(R_cells{:});
 
-% Get 10 measurements of data and stack the data
+% Get measurements of data and stack the data
 y_meas = [];
 for i = 1:num_measurements
-    y_meas = [y_meas; Data.ydata(:,i+1)];
+    % y_meas = [y_meas; Data.ydata(:,i+1)];
+    y_meas = [y_meas; y_noise_mat(i,:)'];
 end
 
 % Initial guess
 xhat_old = [0; 0; 0; y_meas(4); y_meas(5); 0]; % Rough initial guess, maybe use the first measurement
+%xhat_old = x_nom;
 
 % Gauss Newton optimization
 max_iterations = 200;
@@ -76,18 +86,21 @@ while iteration < max_iterations
     Jcurr = (y_meas - y_pred)' * inv(Rbig) * (y_meas - y_pred);
     dxhat = inv(Hbig' * inv(Rbig) * Hbig) * Hbig' * inv(Rbig) * (y_meas - y_pred);
 
+    % No alpha splitting
+    % xhat_new = xhat_old + dxhat;
+
     % Make alpha smaller so we don't diverge
     alpha = 1;
     alpha_iter = 1;
     while alpha_iter < alpha_splits
         % Proposed update to the estimate
         xhat_new = xhat_old + alpha .* dxhat;
-        
+
         % Get new predicted measurements
-        yhat_new = [];
         xinit = xhat_new;
         [~, xpred] = ode45(@(t, x)coopEOM(t, x, u, zeros(length(xinit),1)), time_vector, xinit, options);
 
+        yhat_new = [];
         for i = 1:num_measurements
             % Predicted sensor measurements
             yhat_new = [yhat_new; sensors(xpred(i+1, :)')];

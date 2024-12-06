@@ -67,84 +67,52 @@ sgtitle('Difference Between Nonlinear and Linear Approximation', 'FontSize', 16,
 
 % Define line properties for reusability
 line_width = 1.5;
-linespec = '-';
-ugv_line = {'LineWidth', line_width, 'Color', 'r', 'LineStyle', linespec};
-uav_line = {'LineWidth', line_width, 'Color', 'r', 'LineStyle', linespec};
+ugv_line = {'LineWidth', line_width, 'Color', 'k', 'LineStyle', linespec};
+uav_line = {'LineWidth', line_width, 'Color', '', 'LineStyle', linespec};
 
 % UGV East Position
 subplot(3,2,1);
-plot(TOUT_DT, xdiff(:,1), ugv_line{:});
-ylabel('$\Delta\xi_{g}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
+plot(TOUT, xdiff(:,1), ugv_line{:});
+ylabel('$\xi_{g}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
 title('UGV States', 'FontSize', 12);
 grid on;
 
 % UAV East Position
 subplot(3,2,2);
-plot(TOUT_DT, xdiff(:,4), uav_line{:});
-ylabel('$\Delta\xi_{a}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
+plot(TOUT, xdiff(:,4), uav_line{:});
+ylabel('$\xi_{a}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
 title('UAV States', 'FontSize', 12);
 grid on;
 
 % UGV North Position
 subplot(3,2,3);
-plot(TOUT_DT, xdiff(:,2), ugv_line{:});
-ylabel('$\Delta\eta_{g}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
+plot(TOUT, xdiff(:,2), ugv_line{:});
+ylabel('$\eta_{g}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
 grid on;
 
 % UAV North Position
 subplot(3,2,4);
-plot(TOUT_DT, xdiff(:,5), uav_line{:});
-ylabel('$\Delta\eta_{a}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
+plot(TOUT, xdiff(:,5), uav_line{:});
+ylabel('$\eta_{a}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
 grid on;
 
 % UGV Heading Angle
 subplot(3,2,5);
-plot(TOUT_DT, xdiff(:,3), ugv_line{:});
-ylabel('$\Delta\theta_{g}$ (rad)', 'Interpreter', 'latex', 'FontSize', 12);
+plot(TOUT, xdiff(:,3), ugv_line{:});
+ylabel('$\theta_{g}$ (rad)', 'Interpreter', 'latex', 'FontSize', 12);
 xlabel('Time (s)', 'FontSize', 12);
 grid on;
 
 % UAV Heading Angle
 subplot(3,2,6);
-plot(TOUT_DT, xdiff(:,6), uav_line{:});
-ylabel('$\Delta\theta_{a}$ (rad)', 'Interpreter', 'latex', 'FontSize', 12);
+plot(TOUT, xdiff(:,6), uav_line{:});
+ylabel('$\theta_{a}$ (rad)', 'Interpreter', 'latex', 'FontSize', 12);
 xlabel('Time (s)', 'FontSize', 12);
 grid on;
 
 % Global adjustments
 set(gcf, 'Position', [100, 100, 1200, 800]); % Adjust figure size
 
-
-% Difference in the measurements
-figure();
-sgtitle('Difference Between Linear and Nonlinear Measurements', 'FontSize', 14, 'FontWeight', 'bold');
-
-% Define y-axis labels for each subplot
-ylabels = {
-    '$\Delta\gamma_{ag}$ (rad)', ...
-    '$\Delta\rho_{ga}$ (m)', ...
-    '$\Delta\gamma_{ga}$ (rad)', ...
-    '$\Delta\xi_{a}$ (m)', ...
-    '$\Delta\eta_{a}$ (m)'
-};
-
-% Loop through subplots
-for i = 1:5
-    subplot(5, 1, i);
-    plot(TOUT_DT(2:end), ydiff(:, i), 'LineWidth', 1.5, 'Color', 'r', 'LineStyle', linespec); % Set line properties
-    ylabel(ylabels{i}, 'Interpreter', 'latex', 'FontSize', 12); % Y-axis label
-    grid on; % Add grid
-    hold on;
-    ytickformat('%.2f'); % Simplify y-axis tick format
-    if i < 5
-        set(gca, 'XTickLabel', []); % Remove x-tick labels for all but the last subplot
-    else
-        xlabel('Time (s)', 'FontSize', 12); % Add x-axis label only on the last subplot
-    end
-end
-
-% Adjust subplot spacing for better clarity
-set(gcf, 'Position', [100, 100, 800, 600]); % Resize figure for better proportions
 
 
 
