@@ -48,8 +48,8 @@ end
 
 % Plot
 %plotSim(times, XOUT_DT, '-')
-%plotSim(TOUT_NL, XOUT_NL, YOUT_NL, '-')
-plotSim(TOUT_DT, XOUT_DT, YOUT_DT, '--')
+plotSim(TOUT_NL, XOUT_NL, YOUT_NL, '-')
+%plotSim(TOUT_DT, XOUT_DT, YOUT_DT, '--')
 
 % Plot the perturbations of the linear approximation
 perturbationPlot(TOUT_DT, XOUT_DT, x_nom_mat, '-');

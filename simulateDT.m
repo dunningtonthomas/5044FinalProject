@@ -51,6 +51,10 @@ for i = 1:length(times)-1
     % Add the perturbation to the nominal trajectory
     XOUT(i+1, :) = xk(i+1, :) + x_nom_mat(i+1,:);
     YOUT(i, :) = yk(i, :) + y_nom;
+
+    % Angle wrap angles
+    YOUT(i,1) = mod(YOUT(i,1) + pi, 2*pi) - pi;
+    YOUT(i,3) = mod(YOUT(i,3) + pi, 2*pi) - pi;
 end
 
 % Get the last measurement
