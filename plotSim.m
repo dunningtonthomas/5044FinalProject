@@ -36,60 +36,63 @@ legend('Location', 'best');
 grid on;
 axis on;
 
+
 % Enhanced subplots
 figure(2);
-sgtitle('Simulated States')
-subplot(3,2,1)
-plot(TOUT, XOUT(:,1), 'LineWidth', 1.5, 'Color', ugv_color, 'linestyle', linespec)
-ylabel('East Position');
-title('UGV East Position');
-grid on;
-hold on;
+sgtitle('Linearized Approximation Simulated States', 'FontSize', 16, 'FontWeight', 'bold'); % Enhanced title appearance
 
-subplot(3,2,2)
-plot(TOUT, XOUT(:,4), 'LineWidth', 1.5, 'Color', uav_color, 'linestyle', linespec)
-ylabel('East Position');
-title('UAV East Position');
-grid on;
-hold on;
+% Define line properties for reusability
+line_width = 1.5;
+ugv_line = {'LineWidth', line_width, 'Color', ugv_color, 'LineStyle', linespec};
+uav_line = {'LineWidth', line_width, 'Color', uav_color, 'LineStyle', linespec};
 
-subplot(3,2,3)
-plot(TOUT, XOUT(:,2), 'LineWidth', 1.5, 'Color', ugv_color, 'linestyle', linespec)
-ylabel('North Position');
-title('UGV North Position');
+% UGV East Position
+subplot(3,2,1);
+plot(TOUT, XOUT(:,1), ugv_line{:});
+ylabel('$\xi_{g}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
+title('UGV States', 'FontSize', 12);
 grid on;
-hold on;
 
-subplot(3,2,4)
-plot(TOUT, XOUT(:,5), 'LineWidth', 1.5, 'Color', uav_color, 'linestyle', linespec)
-ylabel('North Position');
-title('UAV North Position');
+% UAV East Position
+subplot(3,2,2);
+plot(TOUT, XOUT(:,4), uav_line{:});
+ylabel('$\xi_{a}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
+title('UAV States', 'FontSize', 12);
 grid on;
-hold on;
 
-subplot(3,2,5)
-plot(TOUT, XOUT(:,3), 'LineWidth', 1.5, 'Color', ugv_color, 'linestyle', linespec)
-ylabel('Heading Angle');
-title('UGV Heading Angle');
-xlabel('Time');
+% UGV North Position
+subplot(3,2,3);
+plot(TOUT, XOUT(:,2), ugv_line{:});
+ylabel('$\eta_{g}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
 grid on;
-hold on;
 
-subplot(3,2,6)
-plot(TOUT, XOUT(:,6), 'LineWidth', 1.5, 'Color', uav_color, 'linestyle', linespec)
-ylabel('Heading Angle');
-title('UAV Heading Angle');
-xlabel('Time');
+% UAV North Position
+subplot(3,2,4);
+plot(TOUT, XOUT(:,5), uav_line{:});
+ylabel('$\eta_{a}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
 grid on;
-hold on;
 
-% Global figure adjustments
+% UGV Heading Angle
+subplot(3,2,5);
+plot(TOUT, XOUT(:,3), ugv_line{:});
+ylabel('$\theta_{g}$ (rad)', 'Interpreter', 'latex', 'FontSize', 12);
+xlabel('Time (s)', 'FontSize', 12);
+grid on;
+
+% UAV Heading Angle
+subplot(3,2,6);
+plot(TOUT, XOUT(:,6), uav_line{:});
+ylabel('$\theta_{a}$ (rad)', 'Interpreter', 'latex', 'FontSize', 12);
+xlabel('Time (s)', 'FontSize', 12);
+grid on;
+
+% Global adjustments
 set(gcf, 'Position', [100, 100, 1200, 800]); % Adjust figure size
 
 
 % Measurement vector plot
 figure(3);
-sgtitle('Measurements', 'FontSize', 14, 'FontWeight', 'bold');
+sgtitle('Linearized Full State Measurements', 'FontSize', 14, 'FontWeight', 'bold');
 
 % Define y-axis labels for each subplot
 ylabels = {
