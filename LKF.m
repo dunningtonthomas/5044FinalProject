@@ -38,11 +38,11 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
     % dy_update = y_actual-y_nom;
     % x_est(:,1) = dx_update+x_nom(:,1);
     % sigma(:,1) = sqrt(diag(P_update));
-    [xhat_final,P_final] = NLLS(u_nom,y_actual,Q,R,dt);
-     x_est(:,1) = xhat_final;
-     sigma(:,1) = sqrt(diag(P_final));
-     P_update = P_final;
-     dx_update = xhat_final-x_nom(:,1);
+     x_est(:,1) = x_nom(:,1);
+    
+     P_update = diag(ones(6,1)*100000);
+     sigma(:,1) = sqrt(diag(P_update));
+     dx_update = x_est(:,1)-x_nom(:,1);
      dx_update(3) = mod(dx_update(3) + pi, 2*pi) - pi;
      dx_update(6) = mod(dx_update(6) + pi, 2*pi) - pi;
      du = zeros(size(G,2),1);
@@ -59,12 +59,20 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
         % Prediction Step
         % Estimate state perturbation
         dx = F*dx_update+G*du;
-        P = F*P_update*F'+Omega*Q*Omega;
+        P = F*P_update*F'+Omega*Q*Omega';
         du = u_actual(:,i+1) - u_nom(:,i+1);
+        % Angle Wrapping
+        dx(3,:) = mod(dx(3,:) + pi, 2*pi) - pi;
+        dx(6,:) = mod(dx(6,:) + pi, 2*pi) - pi;
         % Measurement Update Step
         K = P*H'*(H*P*H'+R)^-1;
         dx_update = dx +K*(dy_update(:,i)-H*dx);
         P_update = (eye(size(P))-K*H)*P;
+        % Angle Wrapping
+        dx_update(3,:) = mod(dx_update(3,:) + pi, 2*pi) - pi;
+        dx_update(6,:) = mod(dx_update(6,:) + pi, 2*pi) - pi;
+
+        % Save Estimates
         x_est(:,i+1) = dx_update+x_nom(:,i);
         sigma(:,i+1) = sqrt(diag(P_update));
     end

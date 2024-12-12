@@ -46,14 +46,22 @@ R_true = Data.Rtrue;
 
 
 %% Apply Linearized Kalman Filter
-[x_LKF,sigma]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_true,R_true,dt);
+Q_tune = Q_true;
+Q_tune(1,1) = Q_tune(1,1)*100;
+Q_tune(3,3) = Q_tune(3,3)*10;
+
+[x_LKF,sigma]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_tune,R_true,dt);
 
 %% Plotting
 % plotSim(t_noise, x_noise_mat, y_noise_mat, '--')
 % plotSim(t_nom, x_nom_mat, y_nom_mat, '-')
 % plotSim(t_noise, x_LKF', y_noise_mat, '-.')
 
-x_error = x_LKF' - x_nom_mat;
+x_error = x_LKF' - x_noise_mat;
+% Angle wrapping
+x_error(:,3) = mod(x_error(:,3) + pi, 2*pi) - pi;
+x_error(:,6) = mod(x_error(:,6) + pi, 2*pi) - pi;
+
 % State labels
 state_labels = {'\xi_g Error [m]', '\eta_g Error [m]','\theta_g Error [rad]','\xi_a Error [m]','\eta_a Error [m]','\theta_a Error [rad]'};
 % Plot the error for each state element of xs(k) vs time with ±2σ bounds
@@ -62,7 +70,7 @@ plot_num = 1;
 for i = 1:6
     subplot(6, 1, plot_num);
     hold on;
-    plot(t_noise(2:end), x_error(2:end,i), 'b', 'LineWidth', 1.5); 
+    plot(t_noise, x_error(:,i), 'b', 'LineWidth', 1.5); 
     plot(t_noise(4:end), 2*sigma(i, 4:end), 'r--', 'LineWidth', 1.2);
     plot(t_noise(4:end), -2*sigma(i, 4:end), 'r--', 'LineWidth', 1.2);
     xlabel('Time [s]');
@@ -73,3 +81,23 @@ for i = 1:6
     plot_num =plot_num+1;
 end
 sgtitle('Aircrafts Position Estimator Error')
+
+
+% State labels
+state_labels = {'\xi_g [m]', '\eta_g  [m]','\theta_g [rad]','\xi_a [m]','\eta_a  [m]','\theta_a [rad]'};
+% Plot the error for each state element of xs(k) vs time with ±2σ bounds
+figure(2);
+plot_num = 1;
+for i = 1:6
+    subplot(6, 1, plot_num);
+    hold on;
+    plot(t_noise, x_LKF(i,:)', 'b', 'LineWidth', 1.5,'DisplayName','Estimated State'); 
+    plot(t_noise, x_noise_mat(:,i)', 'r--', 'LineWidth', 1.2,'DisplayName','Nominal State');
+    xlabel('Time [s]');
+    ylabel(state_labels{plot_num});
+    legend('Location', 'northeast');
+    title(state_labels{plot_num});
+    grid on;
+    plot_num =plot_num+1;
+end
+sgtitle('Aircrafts State Over Time')
