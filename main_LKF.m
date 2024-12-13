@@ -42,33 +42,31 @@ R_true = Data.Rtrue;
 
 %% Apply Linearized Kalman Filter
 Q_tune = Q_true;
-Q_tune(1,1) = Q_tune(1,1)*.1;
-Q_tune(2,2) = Q_tune(2,2)*0.06;
-Q_tune(3,3) = Q_tune(3,3)*10000;
-Q_tune(4,4) = Q_tune(4,4)*45000;
-Q_tune(5,5) = Q_tune(5,5)*45000;
-Q_tune(6,6) = Q_tune(6,6)*100000;
+Q_tune(1,1) = Q_tune(1,1)*1000;
+Q_tune(2,2) = Q_tune(2,2)*7;
+Q_tune(3,3) = Q_tune(3,3)*100000;
+Q_tune(4,4) = Q_tune(4,4)*100;
+Q_tune(5,5) = Q_tune(5,5)*100;
+Q_tune(6,6) = Q_tune(6,6)*10000;
 
 % % 1
-Q_tune(1,2) = Q_tune(1,2)+1/400;
+Q_tune(1,2) = Q_tune(1,2)+2.2/15;
 Q_tune(2,1) = Q_tune(1,2);
 
-Q_tune(1,3) = Q_tune(1,3)-1/1000;
+Q_tune(1,3) = Q_tune(1,3)-10;
 Q_tune(3,1) = Q_tune(1,3);
 
-Q_tune(1,6) = Q_tune(1,6)+1/700;
-Q_tune(6,1) = Q_tune(1,6);
 % % 2
-Q_tune(2,3) = Q_tune(2,3)-5/100;
+Q_tune(2,3) = Q_tune(2,3)+1.01;
 Q_tune(3,2) = Q_tune(2,3);
 
-
 % 4
-Q_tune(4,5) = Q_tune(4,5)+9/1000;
+Q_tune(4,5) = Q_tune(4,5)-1.3/20;
 Q_tune(5,4) = Q_tune(4,5);
-% Q_tune(4,6) = Q_tune(4,6)+1/1;
-% Q_tune(6,4) = Q_tune(4,6);
 
+% Q_tune(4,6) = Q_tune(4,6)-1/10;
+% Q_tune(6,4) = Q_tune(4,6);
+% 
 % Q_tune(5,6) = Q_tune(5,6)-1/10;
 % Q_tune(6,5) = Q_tune(5,6);
 % 
