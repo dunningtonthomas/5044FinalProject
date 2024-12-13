@@ -61,12 +61,17 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
         [~,~,Omega,H] = eulerDiscretize(A,B,C,D,Gamma,dt);
         % Prediction Step
         % Estimate state perturbation
-        dx = F*dx_update+G*du;
+        dx = F*dx_update;
         P = F*P_update*F'+Omega*Q*Omega';
-        du = u_actual(:,i+1) - u_nom(:,i+1);
         % Measurement Update Step
-        K = P*H'*(H*P*H'+R)^-1;
-        dx_update = dx +K*(dy_update(:,i)-H*dx);
+        K = P*H'*inv(H*P*H'+R);
+        innovation = dy_update(:,i)-H*dx;
+
+        % Wrap the innovation
+        innovation(1) = mod(innovation(1) + pi, 2*pi) - pi;
+        innovation(3) = mod(innovation(3) + pi, 2*pi) - pi;
+
+        dx_update = dx +K*innovation;
         P_update = (eye(size(P))-K*H)*P;
         % Save Estimates
         x_est(:,i+1) = dx_update+x_nom(:,i+1);
