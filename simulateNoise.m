@@ -40,8 +40,8 @@ function [time,x_noise_mat,y_noise_mat] = simulateNoise(x0,u0,Q,R,dt,n_ind)
     end
     
     % Angle wrapping
-    x_noise_mat(:,3) = mod(x_noise_mat(:,3) + pi, 2*pi) - pi;
-    x_noise_mat(:,6) = mod(x_noise_mat(:,6) + pi, 2*pi) - pi;
+    % x_noise_mat(:,3) = mod(x_noise_mat(:,3) + pi, 2*pi) - pi;
+    % x_noise_mat(:,6) = mod(x_noise_mat(:,6) + pi, 2*pi) - pi;
     
     % Calculate the measurements from the sensor model
     y_noise_mat = zeros(length(time)-1, 5);
@@ -52,7 +52,7 @@ function [time,x_noise_mat,y_noise_mat] = simulateNoise(x0,u0,Q,R,dt,n_ind)
     Sv_measurement = chol(R,'lower');
     q = randn(5,length(time)-1);
     y_noise_mat =  y_noise_mat + (Sv_measurement*q)';
-    y_noise_mat(:,1) = mod(y_noise_mat(:,1) + pi, 2*pi) - pi;
-    y_noise_mat(:,3) = mod(y_noise_mat(:,3) + pi, 2*pi) - pi;
+    % y_noise_mat(:,1) = mod(y_noise_mat(:,1) + pi, 2*pi) - pi;
+    % y_noise_mat(:,3) = mod(y_noise_mat(:,3) + pi, 2*pi) - pi;
 end
 
