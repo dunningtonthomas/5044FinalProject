@@ -47,75 +47,47 @@ x_init = x_noise_mat(1,:);
 %x_init = xhat_final;
 P_init = diag([1000, 1000, 2*pi, 1000, 1000, 2*pi]);
 
+% Unknown init
+% x_init = zeros(1,6);
+% P_init = 1000.*diag([10000, 10000, 6*pi, 10000, 10000, 6*pi]);
+
 % Tune the Q and R matrices
-Q = 1000 .* Q;
+Q_ekf = 1 .* Q;
+% Q_ekf(4,4) = Q_ekf(4,4) * 1000;
+% Q_ekf(5,5) = Q_ekf(5,5) * 1000;
+% Q_ekf(3,3) = Q_ekf(3,3) * 0.1;
+% Q_ekf(6,6) = Q_ekf(6,6) * 0.1;
 R = R;
 
 % Estimated and covariance matrices
 xhat_mat = zeros(length(x_noise_mat(:,1)), 6);
 sigma_mat = zeros(length(y_noise_mat(:,1)), 6);
 
-% Monte Carlo Simulation Parameters
-Nsim = 50; % Number of Monte Carlo simulations
-Nstate = size(x_nom, 1);
-Nmeas = size(y_noise_mat, 2);
+% Loop over the noisy measurements to get the estimates
+xhat_curr = x_init;
+xhat_mat(1,:) = x_init;
+P_curr = P_init;
+sigma_mat(1,:) = sqrt(diag(P_curr))';
+for i = 1:length(y_noise_mat(:,1))
+    % Get the current measurement
+    y_meas = y_noise_mat(i,:)';
 
-% Preallocate for NEES and NIS results
-nees_vals = zeros(Nsim, length(time_tmt)-1);
-nis_vals = zeros(Nsim, length(time_tmt)-1);
+    % Kalman update
+    [xhat_curr, P_curr] = EKF(xhat_curr, P_curr, u_nom, y_meas, dt, Q_ekf, R);
 
-for sim_idx = 1:Nsim
-    % Initialize the EKF for each Monte Carlo run
-    xhat_curr = x_init;
-    P_curr = P_init;
-
-    % Loop over the noisy measurements to get the estimates
-    for i = 1:length(y_noise_mat(:,1))
-        % Get the current measurement
-        y_meas = y_noise_mat(i,:)';
-
-        % Linearize the measurement function to get the Jacobian H
-        [~, ~, H, ~] = linearize(xhat_curr, u_nom);
-
-        % Kalman update
-        [xhat_curr, P_curr] = EKF(xhat_curr, P_curr, u_nom, y_meas, dt, Q, R);
-
-        % Store the result in a matrix of the estimated state
-        xhat_mat(i+1, :) = xhat_curr';
-        sigma_mat(i+1,:) = sqrt(diag(P_curr))';
-
-        % Compute the NEES and NIS for this simulation
-        % NEES (Normalized Estimation Error Squared)
-        x_error = xhat_curr - x_noise_mat(i,:)';
-        nees_vals(sim_idx, i) = x_error' * inv(P_curr) * x_error;
-
-        % Innovation vector and covariance
-        innovation = y_meas - H * xhat_curr;
-        S = R + H * P_curr * H'; % Innovation covariance
-        nis_vals(sim_idx, i) = innovation' * inv(S) * innovation;
-    end
+    % Store the result in a matrix of the estimated state;
+    xhat_mat(i+1, :) = xhat_curr';
+    sigma_mat(i+1,:) = sqrt(diag(P_curr))';
 end
 
-% Chi-Square Test Bounds
-alpha = 0.05; % Significance level
-r1_NEES = chi2inv(alpha/2, Nstate) / Nsim;
-r2_NEES = chi2inv(1-alpha/2, Nstate) / Nsim;
 
-r1_NIS = chi2inv(alpha/2, Nmeas) / Nsim;
-r2_NIS = chi2inv(1-alpha/2, Nmeas) / Nsim;
-
-% Average NEES and NIS across all runs
-mean_nees = mean(nees_vals, 1); % Time-averaged NEES
-mean_nis = mean(nis_vals, 1);   % Time-averaged NIS
-
-
-%% Plot the results
+% Plot the results
 % figure();
 plotSim(time_tmt, x_noise_mat, y_noise_mat, '-');
 %plotSim(time_tmt, xhat_mat, y_noise_mat, '--');
 
 
-% Plot the errors with the two sigma bounds
+%% Plot the errors with the two sigma bounds
 x_error = xhat_mat - x_noise_mat;
 % x_error(:,3) = mod(x_error(:,3) + pi, 2*pi) - pi;
 % x_error(:,6) = mod(x_error(:,6) + pi, 2*pi) - pi;
@@ -159,30 +131,100 @@ end
 sgtitle('State Estimator Errors with $\pm 2 \sigma$  Bounds', 'Interpreter', 'latex', 'FontSize', 14);
 
 
-figure;
-subplot(2, 1, 1);
-plot(time_tmt(2:end), mean_nees, 'b', 'LineWidth', 1.5);
+
+
+
+%% Plot the estimated states and the ground truth states
+
+% Angle wrapping
+x_noise_mat(:,3) = mod(x_noise_mat(:,3) + pi, 2*pi) - pi;
+x_noise_mat(:,6) = mod(x_noise_mat(:,6) + pi, 2*pi) - pi;
+xhat_mat(:,3) = mod(xhat_mat(:,3) + pi, 2*pi) - pi;
+xhat_mat(:,6) = mod(xhat_mat(:,6) + pi, 2*pi) - pi;
+
+
+% Wrap the measurements too
+y_noise_mat(:,1) = mod(y_noise_mat(:,1) + pi, 2*pi) - pi;
+y_noise_mat(:,3) = mod(y_noise_mat(:,3) + pi, 2*pi) - pi;
+
+
+% Define colors for better visualization
+ugv_color = [0, 0.4470, 0.7410]; % UGV color
+% uav_color = [0.8500, 0.3250, 0.0980]; % UAV color
+uav_color = [0, 0.4470, 0.7410]; % UAV color
+
+% Enhanced comparison plot
+figure();
+plot(x_noise_mat(:,1), x_noise_mat(:,2), 'LineWidth', 1.5, 'Color', 'r', 'DisplayName', 'UGV')
 hold on;
-yline(r1_NEES, 'r--', 'LineWidth', 1.2);
-yline(r2_NEES, 'r--', 'LineWidth', 1.2);
-xlabel('Time [s]');
-ylabel('NEES');
-legend('Mean NEES', '\chi^2 Lower Bound', '\chi^2 Upper Bound');
-title('NEES Chi-Square Test');
+plot(x_noise_mat(:,4), x_noise_mat(:,5), '--', 'LineWidth', 1.5, 'Color', 'r', 'DisplayName', 'UAV')
+plot(xhat_mat(:,1), xhat_mat(:,2), 'LineWidth', 1.5, 'Color', 'b', 'DisplayName', 'UGV')
+plot(xhat_mat(:,4), xhat_mat(:,5), '--', 'LineWidth', 1.5, 'Color', 'b', 'DisplayName', 'UAV')
+xlabel('East Position');
+ylabel('North Position');
+title('UGV vs UAV Position');
+legend('UGV True','UAV True','UGV Estimate','UAV Estimate', 'Location', 'best');
+grid on;
+axis on;
+
+
+% Enhanced subplots
+figure();
+sgtitle('Ground Truth vs Estimated States', 'FontSize', 16, 'FontWeight', 'bold'); % Enhanced title appearance
+
+% UGV East Position
+subplot(3,2,1);
+plot(time_tmt, x_noise_mat(:,1), 'color', 'r', 'LineWidth', 2);
+hold on
+plot(time_tmt, xhat_mat(:,1), '--', 'color', 'b', 'LineWidth', 2);
+ylabel('$\xi_{g}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
+title('UGV States', 'FontSize', 12);
 grid on;
 
-subplot(2, 1, 2);
-plot(time_tmt(2:end), mean_nis, 'b', 'LineWidth', 1.5);
-hold on;
-yline(r1_NIS, 'r--', 'LineWidth', 1.2);
-yline(r2_NIS, 'r--', 'LineWidth', 1.2);
-xlabel('Time [s]');
-ylabel('NIS');
-legend('Mean NIS', '\chi^2 Lower Bound', '\chi^2 Upper Bound');
-title('NIS Chi-Square Test');
+% UAV East Position
+subplot(3,2,2);
+plot(time_tmt, x_noise_mat(:,4), 'color', 'r', 'LineWidth', 2);
+hold on
+plot(time_tmt, xhat_mat(:,4), '--','color', 'b', 'LineWidth', 2);
+ylabel('$\xi_{a}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
+title('UAV States', 'FontSize', 12);
+legend('Ground Truth', 'Estimates', 'location', 'ne')
 grid on;
 
-sgtitle('NEES and NIS Validation for Extended Kalman Filter');
+% UGV North Position
+subplot(3,2,3);
+plot(time_tmt, x_noise_mat(:,2), 'color', 'r', 'LineWidth', 2);
+hold on
+plot(time_tmt, xhat_mat(:,2), '--','color', 'b', 'LineWidth', 2);
+ylabel('$\eta_{g}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
+grid on;
 
+% UAV North Position
+subplot(3,2,4);
+plot(time_tmt, x_noise_mat(:,5), 'color', 'r', 'LineWidth', 2);
+hold on
+plot(time_tmt, xhat_mat(:,5), '--','color', 'b', 'LineWidth', 2);
+ylabel('$\eta_{a}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
+grid on;
 
+% UGV Heading Angle
+subplot(3,2,5);
+plot(time_tmt, x_noise_mat(:,3), 'color', 'r', 'LineWidth', 2);
+hold on
+plot(time_tmt, xhat_mat(:,3), '--','color', 'b', 'LineWidth', 2);
+ylabel('$\theta_{g}$ (rad)', 'Interpreter', 'latex', 'FontSize', 12);
+xlabel('Time (s)', 'FontSize', 12);
+grid on;
+
+% UAV Heading Angle
+subplot(3,2,6);
+plot(time_tmt, x_noise_mat(:,6), 'color', 'r', 'LineWidth', 2);
+hold on
+plot(time_tmt, xhat_mat(:,6), '--','color', 'b', 'LineWidth', 2);
+ylabel('$\theta_{a}$ (rad)', 'Interpreter', 'latex', 'FontSize', 12);
+xlabel('Time (s)', 'FontSize', 12);
+grid on;
+
+% Global adjustments
+set(gcf, 'Position', [100, 100, 1200, 800]); % Adjust figure size
 
