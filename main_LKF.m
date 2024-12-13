@@ -98,7 +98,55 @@ Q_tune(6,6) = Q_tune(6,6)*1000;
 % 
 % Q_tune = Q_tune*1000;
 
-[x_LKF,sigma]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_tune,R_true,dt);
+%% Monte Carlo Simulations for NEES and NIS
+Nsim = 50; % Number of Monte Carlo simulations
+Nstate = size(x_nom, 1);
+Nmeas = size(y_nom_mat, 2);
+
+% Preallocate for NEES and NIS results
+nees_values = zeros(Nsim, length(t_nom)-1);
+nis_values = zeros(Nsim, length(t_nom)-1);
+
+for sim_idx = 1:Nsim
+    % Simulate noisy trajectory
+    [~, x_noisy, y_noisy] = simulateNoise(x_nom, u_nom, Q_true, R_true, dt, 1000);
+
+    % Apply Linearized Kalman Filter
+    [x_LKF, sigma] = LKF(x_nom_mat', u_nom_mat', y_nom_mat', y_noisy', u_nom_mat', Q_true, R_true, dt);
+
+    % Compute NEES and NIS for this run
+    for k = 1:length(t_nom)-1
+        % State estimation error
+        e_k = x_noisy(k, :)' - x_LKF(:, k);
+        P_k = diag(sigma(:, k));
+
+        % NEES (normalized state error)
+        nees_values(sim_idx, k) = e_k' * (P_k \ e_k); % e_k' * inv(P_k) * e_k
+
+        % Innovation and covariance
+        innov = y_noisy(k, :)' - y_nom_mat(k, :)';
+
+        % Use the linearize function to compute the observation Jacobian (C)
+        [~, ~, H, ~] = linearize(x_LKF(:, k), u_nom); % Compute Jacobians
+        S_k = R_true + H * P_k * H';
+
+        % NIS (normalized innovation error)
+        nis_values(sim_idx, k) = innov' * (S_k \ innov); % innov' * inv(S_k) * innov
+    end
+end
+
+%% Chi-Square Test Bounds
+alpha = 0.05; % Significance level
+r1_NEES = chi2inv(alpha/2, Nstate) / Nsim;
+r2_NEES = chi2inv(1-alpha/2, Nstate) / Nsim;
+
+r1_NIS = chi2inv(alpha/2, Nmeas) / Nsim;
+r2_NIS = chi2inv(1-alpha/2, Nmeas) / Nsim;
+
+% Average NEES and NIS across all runs
+mean_nees = mean(nees_values, 1); % Time-averaged NEES
+mean_nis = mean(nis_values, 1);   % Time-averaged NIS
+
 
 %% Plotting
 % plotSim(t_noise, x_noise_mat, y_noise_mat, '--')
@@ -153,3 +201,29 @@ for i = 1:6
     plot_num =plot_num+1;
 end
 sgtitle('Aircrafts State Over Time')
+
+
+figure;
+subplot(2, 1, 1);
+plot(t_nom(2:end), mean_nees, 'b', 'LineWidth', 1.5);
+hold on;
+yline(r1_NEES, 'r--', 'LineWidth', 1.2);
+yline(r2_NEES, 'r--', 'LineWidth', 1.2);
+xlabel('Time [s]');
+ylabel('NEES');
+legend('Mean NEES', '\chi^2 Lower Bound', '\chi^2 Upper Bound');
+title('NEES Chi-Square Test');
+grid on;
+
+subplot(2, 1, 2);
+plot(t_nom(2:end), mean_nis, 'b', 'LineWidth', 1.5);
+hold on;
+yline(r1_NIS, 'r--', 'LineWidth', 1.2);
+yline(r2_NIS, 'r--', 'LineWidth', 1.2);
+xlabel('Time [s]');
+ylabel('NIS');
+legend('Mean NIS', '\chi^2 Lower Bound', '\chi^2 Upper Bound');
+title('NIS Chi-Square Test');
+grid on;
+
+sgtitle('NEES and NIS Validation for Linearized Kalman Filter');
