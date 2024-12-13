@@ -18,15 +18,13 @@ azimuth_ugv = atan2((eta_a - eta_g), (xi_a - xi_g)) - theta_g;
 azimuth_uav = atan2((eta_g - eta_a), (xi_g - xi_a)) - theta_a;
 
 % Angle wrap measurements
-azimuth_ugv = mod(azimuth_ugv + pi, 2*pi) - pi;
-azimuth_uav = mod(azimuth_uav + pi, 2*pi) - pi;
+% azimuth_ugv = mod(azimuth_ugv + pi, 2*pi) - pi;
+% azimuth_uav = mod(azimuth_uav + pi, 2*pi) - pi;
 
 % Range measurement
 range = sqrt((xi_g - xi_a)^2 + (eta_g - eta_a)^2);
 
 % Full measurement vector
 y = [azimuth_ugv; range; azimuth_uav; xi_a; eta_a];
-
-
 end
 

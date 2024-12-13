@@ -39,106 +39,99 @@ n_ind = 1000;
 [time_tmt, x_noise_mat, y_noise_mat] = simulateNoise(x_nom, u_nom, Q, R, dt, n_ind);
 
 % Simulate nonlinear equations to get deterministic state trajectory
+% num_measurements = 10;
+% [xhat_final, P_final] = NLLS(u, y_noise_mat, num_measurements, Q, R, dt);
 
 
-% Nonlinear least squares warm start
-num_measurements = 10;
-
-% Create sensor noise matrix
-R_cells = repmat({R}, 1, num_measurements);
-Rbig = blkdiag(R_cells{:});
-
-% Get measurements of data and stack the data
-y_meas = [];
-for i = 1:num_measurements
-    % y_meas = [y_meas; Data.ydata(:,i+1)];
-    y_meas = [y_meas; y_noise_mat(i,:)'];
-end
-
-% Initial guess
-xhat_old = [0; 0; 0; y_meas(4); y_meas(5); 0]; % Rough initial guess, maybe use the first measurement
-%xhat_old = x_nom;
-
-% Gauss Newton optimization
-max_iterations = 200;
-alpha_splits = 10;
-iteration = 0;
-dt = 0.1;
-time_vector = 0:dt:(num_measurements*dt);
-
-while iteration < max_iterations
-    % Get predicted measurement vector
-    y_pred = [];
-    Hbig = [];
-    xinit = xhat_old;
-    [~, xpred] = ode45(@(t, x)coopEOM(t, x, u, zeros(length(xinit),1)), time_vector, xinit, options);
-
-    for i = 1:num_measurements
-        % Get predicted measurement
-        y_pred = [y_pred; sensors(xpred(i+1, :)')];
-
-        % Measurement jacobian
-        [~, ~, H, ~] = linearize(xpred(i+1, :)', zeros(4,1));
-        Hbig = [Hbig; H];
-    end
-
-    % Calculate the cost function
-    Jcurr = (y_meas - y_pred)' * inv(Rbig) * (y_meas - y_pred);
-    dxhat = inv(Hbig' * inv(Rbig) * Hbig) * Hbig' * inv(Rbig) * (y_meas - y_pred);
-
-    % No alpha splitting
-    % xhat_new = xhat_old + dxhat;
-
-    % Make alpha smaller so we don't diverge
-    alpha = 1;
-    alpha_iter = 1;
-    while alpha_iter < alpha_splits
-        % Proposed update to the estimate
-        xhat_new = xhat_old + alpha .* dxhat;
-
-        % Get new predicted measurements
-        xinit = xhat_new;
-        [~, xpred] = ode45(@(t, x)coopEOM(t, x, u, zeros(length(xinit),1)), time_vector, xinit, options);
-
-        yhat_new = [];
-        for i = 1:num_measurements
-            % Predicted sensor measurements
-            yhat_new = [yhat_new; sensors(xpred(i+1, :)')];
-        end
-
-        % Calculate the cost function
-        Jnew = (y_meas - yhat_new)' * inv(Rbig) * (y_meas - yhat_new);
-
-        % Take best cost
-        if Jnew > Jcurr
-            alpha = alpha / 2; % Shrink size
-        else
-            break;
-        end
-
-    end
-
-    % Output the iteration and the cost function
-    fprintf('Iteration: %d, Cost: %.6f\n', iteration, Jcurr);
-
-    % Update the best guess
-    xhat_old = xhat_new;
-    iteration = iteration + 1;
-end
-
-% Final estimate
-xhat_final = xhat_old;
-
-% Calculate the final covariance
-[~, ~, H, ~] = linearize(xhat_final, zeros(4,1));
-P_final = inv(H'*H);
 
 
 % Output the final xhat measurement
-disp('Final Initial State Estimate:');
-disp(xhat_new);
+% disp('Final Initial State Estimate:');
+% disp(xhat_final);
+% 
+% disp('Final Covariance Estimate:');
+% disp(P_final);
 
-disp('Final Covariance Estimate:');
-disp(P_final);
+% Run the EKF with an initial guess and covariance
+x_init = x_noise_mat(1,:);
+P_init = diag([1000, 1000, 2*pi, 1000, 1000, 2*pi]);
+
+% Tune the Q and R matrices
+Q = 1000 .* Q;
+R = R;
+
+% Estimated and covariance matrices
+xhat_mat = zeros(length(x_noise_mat(:,1)), 6);
+sigma_mat = zeros(length(y_noise_mat(:,1)), 6);
+
+% Loop over the noisy measurements to get the estimates
+xhat_curr = x_init;
+xhat_mat(1,:) = x_init;
+P_curr = P_init;
+sigma_mat(1,:) = sqrt(diag(P_curr))';
+for i = 1:length(y_noise_mat(:,1))
+    % Get the current measurement
+    y_meas = y_noise_mat(i,:)';
+
+    % Kalman update
+    [xhat_curr, P_curr] = EKF(xhat_curr, P_curr, u_nom, y_meas, dt, Q, R);
+
+    % Store the result in a matrix of the estimated state;
+    xhat_mat(i+1, :) = xhat_curr';
+    sigma_mat(i+1,:) = sqrt(diag(P_curr))';
+end
+
+
+% Compute the errors between the estimated states and the simulated states
+% xhat_error = xhat_mat - 
+
+% Plot the states over time
+% plotSim(TOUT, XOUT, YOUT, linespec)
+
+% Plot the results
+% figure();
+plotSim(time_tmt, x_noise_mat, y_noise_mat, '-');
+plotSim(time_tmt, xhat_mat, y_noise_mat, '--');
+
+
+% Plot the errors with the two sigma bounds
+x_error = xhat_mat - x_noise_mat;
+% x_error(:,3) = mod(x_error(:,3) + pi, 2*pi) - pi;
+% x_error(:,6) = mod(x_error(:,6) + pi, 2*pi) - pi;
+
+% State labels
+state_labels = {'$\xi_g$ Error [m]', '$\eta_g$ Error [m]', '$\theta_g$ Error [rad]', ...
+                '$\xi_a$ Error [m]', '$\eta_a$ Error [m]', '$\theta_a$ Error [rad]'};
+
+% Create figure
+figure('Name', 'Aircraft Position Estimator Error', 'NumberTitle', 'off', 'Color', 'w');
+plot_num = 1;
+
+% Loop to create 3x2 subplot
+for i = 1:6
+    subplot(3, 2, plot_num); % 3 rows, 2 columns
+    hold on;
+    
+    % Plot error and bounds
+    plot(time_tmt(2:end), x_error(2:end,i), 'b', 'LineWidth', 1.5, 'DisplayName', 'Error'); 
+    plot(time_tmt(4:end), 2*sigma_mat(4:end, i), 'r--', 'LineWidth', 1.2, 'DisplayName', '+2\sigma'); 
+    plot(time_tmt(4:end), -2*sigma_mat(4:end, i), 'r--', 'LineWidth', 1.2, 'DisplayName', '-2\sigma');
+    
+    % Add labels and grid
+    xlabel('Time [s]', 'Interpreter', 'latex', 'FontSize', 10);
+    ylabel(state_labels{plot_num}, 'Interpreter', 'latex', 'FontSize', 10);
+    
+    % Add title
+    title([state_labels{plot_num}, ' with $\pm2\\sigma$ Bounds'], 'Interpreter', 'latex', 'FontSize', 10);
+    
+    % Increment plot number
+    plot_num = plot_num + 1;
+end
+
+% Add a global title
+sgtitle('Aircraft Position Estimator Errors with $\pm2\\sigma$  Bounds', 'Interpreter', 'latex', 'FontSize', 14);
+
+
+
 
 

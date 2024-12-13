@@ -1,7 +1,23 @@
-function [xhat_final,P_final] = NLLS(u,y_actual,Q,R,dt)
-    options = odeset('RelTol', 1e-8, 'AbsTol', 1e-10);
+function [xhat_final,P_final] = NLLS(u, y_actual, num_measurements, Q, R, dt)
+%NLLS Use nonlinear least squares for a warm start for the EKF to estimate
+%the initial state and covariance
+%
+% Inputs: 
+%   u -> constant control input
+%   y_actual -> simulated measurement data, p x num_meas matrix
+%   num_measurements -> amount of measurements to use from y_actual
+%   Q -> process noise covariance matrix
+%   R -> sensor noise covariance matrix
+%   dt -> time step size
+% Outputs:
+%   xhat_meas -> next full state estimate
+%   P_meas -> next covariance
+%
+% Author: Thomas Dunnington
+% Modified: 12/12/2024
+
+    options = odeset('RelTol', 1e-10, 'AbsTol', 1e-10);
     % Nonlinear least squares warm start
-    num_measurements = 10;
     
     % Create sensor noise matrix
     R_cells = repmat({R}, 1, num_measurements);
@@ -10,7 +26,7 @@ function [xhat_final,P_final] = NLLS(u,y_actual,Q,R,dt)
     % Get 10 measurements of data and stack the data
     y_meas = [];
     for i = 1:num_measurements
-        y_meas = [y_meas; y_actual(:,i+1)];
+        y_meas = [y_meas; y_actual(i,:)'];
     end
     
     % Initial guess
