@@ -55,25 +55,61 @@ R = R;
 xhat_mat = zeros(length(x_noise_mat(:,1)), 6);
 sigma_mat = zeros(length(y_noise_mat(:,1)), 6);
 
-% Loop over the noisy measurements to get the estimates
-xhat_curr = x_init;
-xhat_mat(1,:) = x_init;
-P_curr = P_init;
-sigma_mat(1,:) = sqrt(diag(P_curr))';
-for i = 1:length(y_noise_mat(:,1))
-    % Get the current measurement
-    y_meas = y_noise_mat(i,:)';
+% Monte Carlo Simulation Parameters
+Nsim = 50; % Number of Monte Carlo simulations
+Nstate = size(x_nom, 1);
+Nmeas = size(y_noise_mat, 2);
 
-    % Kalman update
-    [xhat_curr, P_curr] = EKF(xhat_curr, P_curr, u_nom, y_meas, dt, Q, R);
+% Preallocate for NEES and NIS results
+nees_vals = zeros(Nsim, length(time_tmt)-1);
+nis_vals = zeros(Nsim, length(time_tmt)-1);
 
-    % Store the result in a matrix of the estimated state;
-    xhat_mat(i+1, :) = xhat_curr';
-    sigma_mat(i+1,:) = sqrt(diag(P_curr))';
+for sim_idx = 1:Nsim
+    % Initialize the EKF for each Monte Carlo run
+    xhat_curr = x_init;
+    P_curr = P_init;
+
+    % Loop over the noisy measurements to get the estimates
+    for i = 1:length(y_noise_mat(:,1))
+        % Get the current measurement
+        y_meas = y_noise_mat(i,:)';
+
+        % Linearize the measurement function to get the Jacobian H
+        [~, ~, H, ~] = linearize(xhat_curr, u_nom);
+
+        % Kalman update
+        [xhat_curr, P_curr] = EKF(xhat_curr, P_curr, u_nom, y_meas, dt, Q, R);
+
+        % Store the result in a matrix of the estimated state
+        xhat_mat(i+1, :) = xhat_curr';
+        sigma_mat(i+1,:) = sqrt(diag(P_curr))';
+
+        % Compute the NEES and NIS for this simulation
+        % NEES (Normalized Estimation Error Squared)
+        x_error = xhat_curr - x_noise_mat(i,:)';
+        nees_vals(sim_idx, i) = x_error' * inv(P_curr) * x_error;
+
+        % Innovation vector and covariance
+        innovation = y_meas - H * xhat_curr;
+        S = R + H * P_curr * H'; % Innovation covariance
+        nis_vals(sim_idx, i) = innovation' * inv(S) * innovation;
+    end
 end
 
+% Chi-Square Test Bounds
+alpha = 0.05; % Significance level
+r1_NEES = chi2inv(alpha/2, Nstate) / Nsim;
+r2_NEES = chi2inv(1-alpha/2, Nstate) / Nsim;
 
-% Plot the results
+r1_NIS = chi2inv(alpha/2, Nmeas) / Nsim;
+r2_NIS = chi2inv(1-alpha/2, Nmeas) / Nsim;
+
+% Average NEES and NIS across all runs
+mean_nees = mean(nees_vals, 1); % Time-averaged NEES
+mean_nis = mean(nis_vals, 1);   % Time-averaged NIS
+
+
+%% Plot the results
 % figure();
 plotSim(time_tmt, x_noise_mat, y_noise_mat, '-');
 %plotSim(time_tmt, xhat_mat, y_noise_mat, '--');
@@ -123,6 +159,30 @@ end
 sgtitle('State Estimator Errors with $\pm 2 \sigma$  Bounds', 'Interpreter', 'latex', 'FontSize', 14);
 
 
+figure;
+subplot(2, 1, 1);
+plot(time_tmt(2:end), mean_nees, 'b', 'LineWidth', 1.5);
+hold on;
+yline(r1_NEES, 'r--', 'LineWidth', 1.2);
+yline(r2_NEES, 'r--', 'LineWidth', 1.2);
+xlabel('Time [s]');
+ylabel('NEES');
+legend('Mean NEES', '\chi^2 Lower Bound', '\chi^2 Upper Bound');
+title('NEES Chi-Square Test');
+grid on;
+
+subplot(2, 1, 2);
+plot(time_tmt(2:end), mean_nis, 'b', 'LineWidth', 1.5);
+hold on;
+yline(r1_NIS, 'r--', 'LineWidth', 1.2);
+yline(r2_NIS, 'r--', 'LineWidth', 1.2);
+xlabel('Time [s]');
+ylabel('NIS');
+legend('Mean NIS', '\chi^2 Lower Bound', '\chi^2 Upper Bound');
+title('NIS Chi-Square Test');
+grid on;
+
+sgtitle('NEES and NIS Validation for Extended Kalman Filter');
 
 
 
