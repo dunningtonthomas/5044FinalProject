@@ -20,9 +20,15 @@ function plotSim(TOUT, XOUT, YOUT, linespec)
 XOUT(:,3) = mod(XOUT(:,3) + pi, 2*pi) - pi;
 XOUT(:,6) = mod(XOUT(:,6) + pi, 2*pi) - pi;
 
+% Wrap the measurements too
+YOUT(:,1) = mod(YOUT(:,1) + pi, 2*pi) - pi;
+YOUT(:,3) = mod(YOUT(:,3) + pi, 2*pi) - pi;
+
+
 % Define colors for better visualization
 ugv_color = [0, 0.4470, 0.7410]; % UGV color
-uav_color = [0.8500, 0.3250, 0.0980]; % UAV color
+% uav_color = [0.8500, 0.3250, 0.0980]; % UAV color
+uav_color = [0, 0.4470, 0.7410]; % UAV color
 
 % Enhanced comparison plot
 figure(1);
@@ -39,7 +45,7 @@ axis on;
 
 % Enhanced subplots
 figure(2);
-sgtitle('Linearized Approximation Simulated States', 'FontSize', 16, 'FontWeight', 'bold'); % Enhanced title appearance
+sgtitle('Noisy Simulated Ground Truth', 'FontSize', 16, 'FontWeight', 'bold'); % Enhanced title appearance
 
 % Define line properties for reusability
 line_width = 1.5;
@@ -92,7 +98,7 @@ set(gcf, 'Position', [100, 100, 1200, 800]); % Adjust figure size
 
 % Measurement vector plot
 figure(3);
-sgtitle('Linearized Full State Measurements', 'FontSize', 14, 'FontWeight', 'bold');
+sgtitle('Noisy Simulated Measurements', 'FontSize', 14, 'FontWeight', 'bold');
 
 % Define y-axis labels for each subplot
 ylabels = {
