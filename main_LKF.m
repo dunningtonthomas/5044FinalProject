@@ -28,10 +28,6 @@ t_nom = (0:dt:tspan(2))';
 [~, x_nom_mat] = ode45(eomFunc, t_nom, x_init, options);
 u_nom_mat = ones(length(t_nom), 4) .* u_nom';
 
-% Angle wrapping
-% x_nom_mat(:,3) = mod(x_nom_mat(:,3) + pi, 2*pi) - pi;
-% x_nom_mat(:,6) = mod(x_nom_mat(:,6) + pi, 2*pi) - pi;
-
 % Calculate the measurements from the sensor model
 y_nom_mat = zeros(length(t_nom)-1, 5);
 for i = 2:length(t_nom)
@@ -47,18 +43,61 @@ R_true = Data.Rtrue;
 
 %% Apply Linearized Kalman Filter
 Q_tune = Q_true;
-% Q_tune(1,:) = Q_tune(1,:)*1000;
-% Q_tune(:,1) = Q_tune(:,1)*1000;
-% Q_tune(2,:) = Q_tune(2,:)*10;
-% Q_tune(:,2) = Q_tune(:,2)*10;
-% Q_tune(3,:) = Q_tune(3,:)*10;
-% Q_tune(:,3) = Q_tune(:,3)*10;
-% Q_tune(4,:) = Q_tune(4,:)*10;
-% Q_tune(:,4) = Q_tune(:,4)*10;
-% Q_tune(5,:) = Q_tune(5,:)*10;
-% Q_tune(:,5) = Q_tune(:,5)*10;
-% Q_tune(6,:) = Q_tune(6,:)*10;
-% Q_tune(:,6) = Q_tune(:,6)*10;
+Q_tune(1,1) = Q_tune(1,1)*1000;
+Q_tune(2,2) = Q_tune(2,2)*100;
+Q_tune(3,3) = Q_tune(3,3)*100;
+Q_tune(4,4) = Q_tune(4,4)*1000;
+Q_tune(5,5) = Q_tune(5,5)*1000;
+Q_tune(6,6) = Q_tune(6,6)*100;
+
+% 1
+Q_tune(1,2) = Q_tune(1,2);
+Q_tune(2,1) = Q_tune(1,2);
+
+Q_tune(1,3) = Q_tune(1,3)+1/100;
+Q_tune(3,1) = Q_tune(1,3);
+
+Q_tune(1,4) = Q_tune(1,4)+1/100;
+Q_tune(4,1) = Q_tune(1,4);
+
+Q_tune(1,5) = Q_tune(1,5)+1/100;
+Q_tune(5,1) = Q_tune(1,5);
+
+Q_tune(1,6) = Q_tune(1,6);
+Q_tune(6,1) = Q_tune(1,6);
+
+% 2
+Q_tune(2,3) = Q_tune(2,3)+1/100;
+Q_tune(3,2) = Q_tune(2,3);
+
+Q_tune(2,4) = Q_tune(2,4)+1/1000;
+Q_tune(4,2) = Q_tune(2,4);
+
+Q_tune(2,5) = Q_tune(2,5)+1/1000;
+Q_tune(5,2) = Q_tune(2,5);
+
+Q_tune(2,6) = Q_tune(2,6)+1/1000;
+Q_tune(6,2) = Q_tune(2,6);
+% 3
+Q_tune(4,3) = Q_tune(4,3)+1/1000;
+Q_tune(3,4) = Q_tune(4,3);
+
+Q_tune(5,3) = Q_tune(5,3)+1/1000;
+Q_tune(3,5) = Q_tune(5,3);
+
+Q_tune(6,3) = Q_tune(6,3)+1/1000;
+Q_tune(3,6) = Q_tune(6,3);
+% 4
+Q_tune(4,5) = Q_tune(4,5);
+Q_tune(5,4) = Q_tune(4,5);
+
+Q_tune(4,6) = Q_tune(4,6)+1/1000;
+Q_tune(6,4) = Q_tune(4,6);
+
+Q_tune(5,6) = Q_tune(5,6)+1/1000;
+Q_tune(6,5) = Q_tune(5,6);
+
+Q_tune = Q_tune*1000;
 
 [x_LKF,sigma]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_tune,R_true,dt);
 
@@ -68,10 +107,9 @@ Q_tune = Q_true;
 % plotSim(t_noise, x_LKF', y_noise_mat, '-.')
 
 x_error = x_LKF' - x_noise_mat;
-% % Angle wrapping
-% x_error(:,3) = mod(x_error(:,3) + pi, 2*pi) - pi;
-% x_error(:,6) = mod(x_error(:,6) + pi, 2*pi) - pi;
-
+% Angle wrapping
+x_error(:,3) = mod(x_error(:,3) + pi, 2*pi) - pi;
+x_error(:,6) = mod(x_error(:,6) + pi, 2*pi) - pi;
 % State labels
 state_labels = {'\xi_g Error [m]', '\eta_g Error [m]','\theta_g Error [rad]','\xi_a Error [m]','\eta_a Error [m]','\theta_a Error [rad]'};
 % Plot the error for each state element of xs(k) vs time with ±2σ bounds
@@ -92,7 +130,12 @@ for i = 1:6
 end
 sgtitle('Aircrafts Position Estimator Error')
 
+% Angle wrap before plotting
+x_LKF(3,:) = mod(x_LKF(3,:) + pi, 2*pi) - pi;
+x_LKF(6,:) = mod(x_LKF(6,:) + pi, 2*pi) - pi;
 
+x_noise_mat(:,3) = mod(x_noise_mat(:,3) + pi, 2*pi) - pi;
+x_noise_mat(:,6) = mod(x_noise_mat(:,6) + pi, 2*pi) - pi;
 % State labels
 state_labels = {'\xi_g [m]', '\eta_g  [m]','\theta_g [rad]','\xi_a [m]','\eta_a  [m]','\theta_a [rad]'};
 % Plot the error for each state element of xs(k) vs time with ±2σ bounds
