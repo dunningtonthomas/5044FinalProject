@@ -18,13 +18,13 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
     % Author: Owen Craig
     % Modified: 12/3/2024
     n = length(y_actual);
-    H_mat = [];
+    % H_mat = [];
     Gamma = eye(size(x_nom,1),size(x_nom,1));
-    for i = 1:n
-        [A, B, C, D] = linearize(x_nom(:,i), u_nom(:,i));
-        [~,G,~,H] = eulerDiscretize(A,B,C,D,Gamma,dt);
-        H_mat = [H_mat;H];
-    end
+    % for i = 1:n
+    %     [A, B, C, D] = linearize(x_nom(:,i), u_nom(:,i));
+    %     [~,G,~,H] = eulerDiscretize(A,B,C,D,Gamma,dt);
+    %     H_mat = [H_mat;H];
+    % end
     % Initialize the filter using a batch lls to warm start the filter @k = 0
     % R_mat = kron(eye(n), R);
     % y_reshaped = reshape(y_actual', [], 1);
@@ -39,20 +39,17 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
     % x_est(:,1) = dx_update+x_nom(:,1);
     % sigma(:,1) = sqrt(diag(P_update));
      x_est(:,1) = x_nom(:,1);
-     P_update = diag(ones(6,1)*100000);
+     P_update = Q*100;
+     P_update(1,1) = P_update(1,1)*100;
+     P_update(2,2) = P_update(2,2)*1000;
      sigma(:,1) = sqrt(diag(P_update));
      dx_update = x_est(:,1)-x_nom(:,1);
-     du = zeros(size(G,2),1);
+     du = zeros(size(u_nom,1),1);
      dy_update = y_actual-y_nom;
-
+     dy_update(1) = mod(dy_update(1) + pi, 2*pi) - pi;
+     dy_update(3) = mod(dy_update(3) + pi, 2*pi) - pi;
     % Use the lineraized Kalman Filter to estimate the state
     for i =1:n
-        if i >= 247 
-            asdsasd =1;
-            % y_actual(:,i)
-            % y_nom(:,i)
-            % dy_update(:,i)
-        end
         % Pure Predition uses F_k and G_k so calculate @ k
         [A, B, C, D] = linearize(x_nom(:,i), u_nom(:,i));
         [F,G,~,~] = eulerDiscretize(A,B,C,D,Gamma,dt);
@@ -66,9 +63,13 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
         du = u_actual(:,i+1) - u_nom(:,i+1);
         % Measurement Update Step
         K = P*H'*(H*P*H'+R)^-1;
-        dx_update = dx +K*(dy_update(:,i)-H*dx);
+        innovation = dy_update(:,i)-H*dx;
+        % Angle wrap the innovation
+        innovation(1) = mod(innovation(1) + pi, 2*pi) - pi;
+        innovation(3) = mod(innovation(3) + pi, 2*pi) - pi;
+        dx_update = dx +K*(innovation);
         P_update = (eye(size(P))-K*H)*P;
-        % Save Estimates
+
         x_est(:,i+1) = dx_update+x_nom(:,i+1);
         sigma(:,i+1) = sqrt(diag(P_update));
     end

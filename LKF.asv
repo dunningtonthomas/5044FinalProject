@@ -47,8 +47,11 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
 
     % Use the lineraized Kalman Filter to estimate the state
     for i =1:n
-        if i == 246
+        if i >= 247 
             asdsasd =1;
+            % y_actual(:,i)
+            % y_nom(:,i)
+            % dy_update(:,i)
         end
         % Pure Predition uses F_k and G_k so calculate @ k
         [A, B, C, D] = linearize(x_nom(:,i), u_nom(:,i));
