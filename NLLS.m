@@ -30,7 +30,7 @@ function [xhat_final,P_final] = NLLS(u, y_actual, num_measurements, Q, R, dt)
     end
     
     % Initial guess
-    xhat_old = [0; 0; 0; 0; 0; 0]; % Rough initial guess, maybe use the first measurement
+    xhat_old = [0; 0; 0; y_meas(4); y_meas(5); 0]; % Rough initial guess, maybe use the first measurement
     
     % Gauss Newton optimization
     max_iterations = 200;

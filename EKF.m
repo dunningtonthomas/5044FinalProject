@@ -42,6 +42,10 @@ yhat_pred = sensors(xhat_pred);
 % Innovation vector
 innovation = y - yhat_pred;
 
+% Angle wrap the innovation
+innovation(1) = mod(innovation(1) + pi, 2*pi) - pi;
+innovation(3) = mod(innovation(3) + pi, 2*pi) - pi;
+
 % Kalman gain
 K = P_pred * H' * inv(H * P_pred * H' + R);
 

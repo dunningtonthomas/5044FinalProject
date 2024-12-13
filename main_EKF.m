@@ -39,21 +39,12 @@ n_ind = 1000;
 [time_tmt, x_noise_mat, y_noise_mat] = simulateNoise(x_nom, u_nom, Q, R, dt, n_ind);
 
 % Simulate nonlinear equations to get deterministic state trajectory
-% num_measurements = 10;
-% [xhat_final, P_final] = NLLS(u, y_noise_mat, num_measurements, Q, R, dt);
-
-
-
-
-% Output the final xhat measurement
-% disp('Final Initial State Estimate:');
-% disp(xhat_final);
-% 
-% disp('Final Covariance Estimate:');
-% disp(P_final);
+num_measurements = 100;
+%[xhat_final, P_final] = NLLS(u, y_noise_mat, num_measurements, Q, R, dt);
 
 % Run the EKF with an initial guess and covariance
 x_init = x_noise_mat(1,:);
+%x_init = xhat_final;
 P_init = diag([1000, 1000, 2*pi, 1000, 1000, 2*pi]);
 
 % Tune the Q and R matrices
@@ -82,16 +73,10 @@ for i = 1:length(y_noise_mat(:,1))
 end
 
 
-% Compute the errors between the estimated states and the simulated states
-% xhat_error = xhat_mat - 
-
-% Plot the states over time
-% plotSim(TOUT, XOUT, YOUT, linespec)
-
 % Plot the results
 % figure();
 plotSim(time_tmt, x_noise_mat, y_noise_mat, '-');
-plotSim(time_tmt, xhat_mat, y_noise_mat, '--');
+%plotSim(time_tmt, xhat_mat, y_noise_mat, '--');
 
 
 % Plot the errors with the two sigma bounds
@@ -104,12 +89,13 @@ state_labels = {'$\xi_g$ Error [m]', '$\eta_g$ Error [m]', '$\theta_g$ Error [ra
                 '$\xi_a$ Error [m]', '$\eta_a$ Error [m]', '$\theta_a$ Error [rad]'};
 
 % Create figure
-figure('Name', 'Aircraft Position Estimator Error', 'NumberTitle', 'off', 'Color', 'w');
+figure('Name', 'State Estimator Error', 'NumberTitle', 'off', 'Color', 'w');
 plot_num = 1;
 
 % Loop to create 3x2 subplot
+plot_locations = [1, 3, 5, 2, 4, 6];
 for i = 1:6
-    subplot(3, 2, plot_num); % 3 rows, 2 columns
+    subplot(3, 2, plot_locations(plot_num)); % 3 rows, 2 columns
     hold on;
     
     % Plot error and bounds
@@ -120,16 +106,21 @@ for i = 1:6
     % Add labels and grid
     xlabel('Time [s]', 'Interpreter', 'latex', 'FontSize', 10);
     ylabel(state_labels{plot_num}, 'Interpreter', 'latex', 'FontSize', 10);
+
+    % Add legend for the top right
+    if(plot_num == 4)
+        legend('Estimate', '$2 \sigma$ bounds', 'interpreter', 'latex');
+    end
     
     % Add title
-    title([state_labels{plot_num}, ' with $\pm2\\sigma$ Bounds'], 'Interpreter', 'latex', 'FontSize', 10);
+    title([state_labels{plot_num}, ' with $\pm 2 \sigma$ Bounds'], 'Interpreter', 'latex', 'FontSize', 10);
     
     % Increment plot number
     plot_num = plot_num + 1;
 end
 
 % Add a global title
-sgtitle('Aircraft Position Estimator Errors with $\pm2\\sigma$  Bounds', 'Interpreter', 'latex', 'FontSize', 14);
+sgtitle('State Estimator Errors with $\pm 2 \sigma$  Bounds', 'Interpreter', 'latex', 'FontSize', 14);
 
 
 
