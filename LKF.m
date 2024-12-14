@@ -21,7 +21,7 @@ function [x_est,sigma,innovation_vec,S_vec]= LKF(x_nom,u_nom,y_nom,y_actual,u_ac
     Gamma = eye(size(x_nom,1),size(x_nom,1));
     % Initialize Filter
     x_est(:,1) = x_nom(:,1);
-    P_update = Q*10;
+    P_update = diag([1000, 1000, pi/10000, 10, 10, pi/10000]);
     % Initialize Output Variables
     S_vec = {};
     innovation_vec = [];

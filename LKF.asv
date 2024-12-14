@@ -1,4 +1,4 @@
-function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
+function [x_est,sigma,innovation_vec,S_vec]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
     % LKF This function is a Linearized Kalman Filter that returns the estimated state, measurements and covariance
     %
     % Inputs: 
@@ -21,10 +21,10 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
     Gamma = eye(size(x_nom,1),size(x_nom,1));
     % Initialize Filter
     x_est(:,1) = x_nom(:,1);
-    P_update = Q*10;
+    P_update = diag([10, 50, pi/1000, 1, 1, pi/1000]);
     % Initialize Output Variables
-    S = [];
-    innovation_vec = []
+    S_vec = {};
+    innovation_vec = [];
     sigma(:,1) = sqrt(diag(P_update));
     dx_update = x_est(:,1)-x_nom(:,1);
     du = zeros(size(u_nom,1),1);
@@ -54,7 +54,7 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
         P_update = (eye(size(P))-K*H)*P;
 
         x_est(:,i+1) = dx_update+x_nom(:,i+1);
-        S_vec(:,i) = S;
+        S_vec{i} = S;
         innovation_vec(:,i) = innovation;
         sigma(:,i+1) = sqrt(diag(P_update));
     end

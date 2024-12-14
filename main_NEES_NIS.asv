@@ -39,13 +39,13 @@ R_true = Data.Rtrue;
 
 % Apply Linearized Kalman Filter
 Q_tune = Q_true;
-Q_tune(1,1) = Q_tune(1,1)*1000;
-Q_tune(2,2) = Q_tune(2,2)*1000;
-Q_tune(3,3) = Q_tune(3,3)*0.01;
-Q_tune(4,4) = Q_tune(4,4)*100;
-Q_tune(5,5) = Q_tune(5,5)*100;
-Q_tune(6,6) = Q_tune(6,6)*0.01;
-Q_tune = Q_tune*100;
+Q_tune(1,1) = Q_tune(1,1)*10000;
+Q_tune(2,2) = Q_tune(2,2)*10000;
+Q_tune(3,3) = Q_tune(3,3)*1000000;
+Q_tune(4,4) = Q_tune(4,4)*10000;
+Q_tune(5,5) = Q_tune(5,5)*10000;
+Q_tune(6,6) = Q_tune(6,6)*1000000;
+Q_tune = Q_tune*100000;
 
 % Monte Carlo Simulations for NEES and NIS
 Nsim = 50; % Number of Monte Carlo simulations
@@ -57,7 +57,7 @@ nees_values = zeros(Nsim, length(t_nom)-1);
 nis_values = zeros(Nsim, length(t_nom)-1);
 
 % Initialize P 
-P_init = diag([10, 10, pi/20, 1, 1, pi/20]);
+P_init = diag([10, 10, pi/2, 1, 1, pi/2]);
 
 for sim_idx = 1:Nsim
     Sv = chol(P_init,'lower');
@@ -73,9 +73,7 @@ for sim_idx = 1:Nsim
     % Compute NEES and NIS for this run
     for k = 1:length(t_nom)-1
         % State estimation error
-        e_k =  x_LKF(:, k)-x_noisy(k, :)';
-        e_k(3) = mod(e_k(3)+pi,2*pi)-pi;
-        e_k(6) = mod(e_k(6)+pi,2*pi)-pi;
+        e_k = x_noisy(k, :)' - x_LKF(:, k);
         P_k = diag(sigma(:, k));
 
         % NEES (normalized state error)
