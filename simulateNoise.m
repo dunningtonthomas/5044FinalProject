@@ -16,7 +16,7 @@ function [time,x_noise_mat,y_noise_mat] = simulateNoise(x0,u0,Q,R,dt,n_ind)
     % Author: Owen Craig
     % Modified: 12/3/2024
     % Define Constant RNG Seed and ODE45 Tol
-    rng(100);
+    %rng(100);
     options = odeset('RelTol', 1e-8, 'AbsTol', 1e-10);
     
     % Simulate Process Noise

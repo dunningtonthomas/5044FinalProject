@@ -75,6 +75,7 @@ uav_line = {'LineWidth', line_width, 'Color', 'r', 'LineStyle', linespec};
 subplot(3,2,1);
 plot(TOUT_DT, xdiff(:,1), ugv_line{:});
 ylabel('$\Delta\xi_{g}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
+ylim([-0.25 0.25])
 title('UGV States', 'FontSize', 12);
 grid on;
 
@@ -88,6 +89,7 @@ grid on;
 % UGV North Position
 subplot(3,2,3);
 plot(TOUT_DT, xdiff(:,2), ugv_line{:});
+ylim([-0.25 0.25])
 ylabel('$\Delta\eta_{g}$ (m)', 'Interpreter', 'latex', 'FontSize', 12);
 grid on;
 
@@ -100,6 +102,7 @@ grid on;
 % UGV Heading Angle
 subplot(3,2,5);
 plot(TOUT_DT, xdiff(:,3), ugv_line{:});
+ylim([-0.25 0.25])
 ylabel('$\Delta\theta_{g}$ (rad)', 'Interpreter', 'latex', 'FontSize', 12);
 xlabel('Time (s)', 'FontSize', 12);
 grid on;
@@ -107,6 +110,7 @@ grid on;
 % UAV Heading Angle
 subplot(3,2,6);
 plot(TOUT_DT, xdiff(:,6), uav_line{:});
+ylim([-0.25 0.25])
 ylabel('$\Delta\theta_{a}$ (rad)', 'Interpreter', 'latex', 'FontSize', 12);
 xlabel('Time (s)', 'FontSize', 12);
 grid on;

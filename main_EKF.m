@@ -73,7 +73,7 @@ for i = 1:length(y_noise_mat(:,1))
     y_meas = y_noise_mat(i,:)';
 
     % Kalman update
-    [xhat_curr, P_curr] = EKF(xhat_curr, P_curr, u_nom, y_meas, dt, Q_ekf, R);
+    [xhat_curr, P_curr, ~, ~] = EKF(xhat_curr, P_curr, u_nom, y_meas, dt, Q_ekf, R);
 
     % Store the result in a matrix of the estimated state;
     xhat_mat(i+1, :) = xhat_curr';
@@ -83,7 +83,7 @@ end
 
 % Plot the results
 % figure();
-plotSim(time_tmt, x_noise_mat, y_noise_mat, '-');
+%plotSim(time_tmt, x_noise_mat, y_noise_mat, '-');
 %plotSim(time_tmt, xhat_mat, y_noise_mat, '--');
 
 
@@ -130,6 +130,8 @@ end
 % Add a global title
 sgtitle('State Estimator Errors with $\pm 2 \sigma$  Bounds', 'Interpreter', 'latex', 'FontSize', 14);
 
+% Global adjustments
+set(gcf, 'Position', [100, 100, 1200, 800]); % Adjust figure size
 
 
 
