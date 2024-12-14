@@ -1,4 +1,4 @@
-function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
+function [x_est,sigma,innovation_vec,S_vec]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
     % LKF This function is a Linearized Kalman Filter that returns the estimated state, measurements and covariance
     %
     % Inputs: 
@@ -19,11 +19,12 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
     % Modified: 12/3/2024
     n = length(y_actual);
     Gamma = eye(size(x_nom,1),size(x_nom,1));
+    % Initialize Filter
     x_est(:,1) = x_nom(:,1);
     P_update = Q*10;
-    P_update(4,4) = P_update(4,4)*100;
-    P_update(5,5) = P_update(5,5)*100;
-    P_update(2,2) = P_update(2,2)*100;
+    % Initialize Output Variables
+    S_vec = {};
+    innovation_vec = [];
     sigma(:,1) = sqrt(diag(P_update));
     dx_update = x_est(:,1)-x_nom(:,1);
     du = zeros(size(u_nom,1),1);
@@ -43,7 +44,8 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
         dx = F*dx_update;
         P = F*P_update*F'+Omega*Q*Omega';
         % Measurement Update Step
-        K = P*H'*(H*P*H'+R)^-1;
+        S = H*P*H'+R;
+        K = P*H'*(S)^-1;
         innovation = dy_update(:,i)-H*dx;
         % Angle wrap the innovation
         innovation(1) = mod(innovation(1) + pi, 2*pi) - pi;
@@ -52,6 +54,8 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
         P_update = (eye(size(P))-K*H)*P;
 
         x_est(:,i+1) = dx_update+x_nom(:,i+1);
+        S_vec{i} = S;
+        innovation_vec(:,i) = innovation;
         sigma(:,i+1) = sqrt(diag(P_update));
     end
 end

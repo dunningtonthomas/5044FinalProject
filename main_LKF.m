@@ -43,26 +43,26 @@ R_true = Data.Rtrue;
 %% Apply Linearized Kalman Filter
 Q_tune = Q_true;
 Q_tune(1,1) = Q_tune(1,1)*1000;
-Q_tune(2,2) = Q_tune(2,2)*7;
+Q_tune(2,2) = Q_tune(2,2)*100;
 Q_tune(3,3) = Q_tune(3,3)*100000;
 Q_tune(4,4) = Q_tune(4,4)*100;
 Q_tune(5,5) = Q_tune(5,5)*100;
 Q_tune(6,6) = Q_tune(6,6)*10000;
 
-% % 1
-Q_tune(1,2) = Q_tune(1,2)+2.2/15;
-Q_tune(2,1) = Q_tune(1,2);
-
-Q_tune(1,3) = Q_tune(1,3)-10;
-Q_tune(3,1) = Q_tune(1,3);
-
-% % 2
-Q_tune(2,3) = Q_tune(2,3)+1.01;
-Q_tune(3,2) = Q_tune(2,3);
-
-% 4
-Q_tune(4,5) = Q_tune(4,5)-1.3/20;
-Q_tune(5,4) = Q_tune(4,5);
+% % % 1
+% Q_tune(1,2) = Q_tune(1,2)+2.2/15;
+% Q_tune(2,1) = Q_tune(1,2);
+% 
+% Q_tune(1,3) = Q_tune(1,3)-6;
+% Q_tune(3,1) = Q_tune(1,3);
+% 
+% % % 2
+% Q_tune(2,3) = Q_tune(2,3)+1.01;
+% Q_tune(3,2) = Q_tune(2,3);
+% 
+% % 4
+% Q_tune(4,5) = Q_tune(4,5)-1.3/20;
+% Q_tune(5,4) = Q_tune(4,5);
 
 % Q_tune(4,6) = Q_tune(4,6)-1/10;
 % Q_tune(6,4) = Q_tune(4,6);
@@ -80,7 +80,7 @@ innovation = y_noise_mat-y_nom_mat;
 % plot(t_noise(2:end),innovation);
 
 
-[x_LKF,sigma]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_tune,R_true,dt);
+[x_LKF,sigma,innovation_vec,S_vec]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_tune,R_true,dt);
 
 %% Plotting
 % plotSim(t_noise, x_noise_mat, y_noise_mat, '--')
@@ -97,15 +97,15 @@ state_labels = {'\xi_g Error [m]', '\eta_g Error [m]','\theta_g Error [rad]','\x
 figure(1);
 plot_num = 1;
 for i = 1:6
-    subplot(6, 1, plot_num);
+    subplot(3, 2, plot_num);
     hold on;
     plot(t_noise, x_error(:,i), 'b', 'LineWidth', 1.5); 
     plot(t_noise(4:end), 2*sigma(i, 4:end), 'r--', 'LineWidth', 1.2);
     plot(t_noise(4:end), -2*sigma(i, 4:end), 'r--', 'LineWidth', 1.2);
-    xlabel('Time [s]');
-    ylabel(state_labels{plot_num});
-    legend('Error', '\pm2\sigma', 'Location', 'best');
-    title([state_labels{plot_num}, 'Error with \pm2\sigma Bounds']);
+    xlabel('Time [s]','FontSize',15);
+    ylabel(state_labels{plot_num},'FontSize',15);
+    legend('Error', '\pm2\sigma', 'Location', 'northwest','FontSize',20);
+    title([state_labels{plot_num}, 'Error with \pm2\sigma Bounds'],'FontSize',20);
     grid on;
     plot_num =plot_num+1;
 end
@@ -123,14 +123,14 @@ state_labels = {'\xi_g [m]', '\eta_g  [m]','\theta_g [rad]','\xi_a [m]','\eta_a 
 figure(2);
 plot_num = 1;
 for i = 1:6
-    subplot(6, 1, plot_num);
+    subplot(3, 2, plot_num);
     hold on;
     plot(t_noise, x_LKF(i,:)', 'b', 'LineWidth', 1.5,'DisplayName','Estimated State'); 
     plot(t_noise, x_noise_mat(:,i)', 'r--', 'LineWidth', 1.2,'DisplayName','Nominal State');
-    xlabel('Time [s]');
-    ylabel(state_labels{plot_num});
-    legend('Location', 'northeast');
-    title(state_labels{plot_num});
+    xlabel('Time [s]','FontSize',15);
+    ylabel(state_labels{plot_num},'FontSize',15);
+    legend('Location', 'northwest','FontSize',15);
+    title(state_labels{plot_num},'FontSize',20);
     grid on;
     plot_num =plot_num+1;
 end
