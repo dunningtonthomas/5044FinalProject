@@ -1,4 +1,4 @@
-function [xhat_meas, P_meas] = EKF(xhat_prev, P_prev, u, y, dt, Q, R)
+function [xhat_meas, P_meas, innovation, S] = EKF(xhat_prev, P_prev, u, y, dt, Q, R)
 %EKF This performs a single EKF update with prediction and measurement
 %update steps
 %
@@ -47,7 +47,8 @@ innovation(1) = mod(innovation(1) + pi, 2*pi) - pi;
 innovation(3) = mod(innovation(3) + pi, 2*pi) - pi;
 
 % Kalman gain
-K = P_pred * H' * inv(H * P_pred * H' + R);
+S = H * P_pred * H' + R;
+K = P_pred * H' * inv(S);
 
 % Update state and covariance
 xhat_meas = xhat_pred + K*innovation;
