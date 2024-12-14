@@ -18,36 +18,18 @@ function [x_est,sigma]= LKF(x_nom,u_nom,y_nom,y_actual,u_actual,Q,R,dt)
     % Author: Owen Craig
     % Modified: 12/3/2024
     n = length(y_actual);
-    % H_mat = [];
     Gamma = eye(size(x_nom,1),size(x_nom,1));
-    % for i = 1:n
-    %     [A, B, C, D] = linearize(x_nom(:,i), u_nom(:,i));
-    %     [~,G,~,H] = eulerDiscretize(A,B,C,D,Gamma,dt);
-    %     H_mat = [H_mat;H];
-    % end
-    % Initialize the filter using a batch lls to warm start the filter @k = 0
-    % R_mat = kron(eye(n), R);
-    % y_reshaped = reshape(y_actual', [], 1);
-    % xls  = (H_mat'*R_mat^-1*H_mat)^-1*H_mat'*R_mat^-1*y_reshaped;
-    % Pls = (H_mat'*R_mat^-1*H_mat)^-1;
-    % P_update = Pls;
-    % dx_update = xls-x_nom(:,1);
-    % dx_update(3) = mod(dx_update(3) + pi, 2*pi) - pi;
-    % dx_update(6) = mod(dx_update(6) + pi, 2*pi) - pi;
-    % du = zeros(size(G,2),1);
-    % dy_update = y_actual-y_nom;
-    % x_est(:,1) = dx_update+x_nom(:,1);
-    % sigma(:,1) = sqrt(diag(P_update));
-     x_est(:,1) = x_nom(:,1);
-     P_update = Q*100;
-     P_update(1,1) = P_update(1,1)*100;
-     P_update(2,2) = P_update(2,2)*1000;
-     sigma(:,1) = sqrt(diag(P_update));
-     dx_update = x_est(:,1)-x_nom(:,1);
-     du = zeros(size(u_nom,1),1);
-     dy_update = y_actual-y_nom;
-     dy_update(1) = mod(dy_update(1) + pi, 2*pi) - pi;
-     dy_update(3) = mod(dy_update(3) + pi, 2*pi) - pi;
+    x_est(:,1) = x_nom(:,1);
+    P_update = Q*10;
+    P_update(4,4) = P_update(4,4)*100;
+    P_update(5,5) = P_update(5,5)*100;
+    P_update(2,2) = P_update(2,2)*100;
+    sigma(:,1) = sqrt(diag(P_update));
+    dx_update = x_est(:,1)-x_nom(:,1);
+    du = zeros(size(u_nom,1),1);
+    dy_update = y_actual-y_nom;
+    dy_update(1) = mod(dy_update(1) + pi, 2*pi) - pi;
+    dy_update(3) = mod(dy_update(3) + pi, 2*pi) - pi;
     % Use the lineraized Kalman Filter to estimate the state
     for i =1:n
         % Pure Predition uses F_k and G_k so calculate @ k
