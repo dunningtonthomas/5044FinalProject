@@ -17,20 +17,44 @@ function [x_est,sigma,innovation_vec,S_vec]= LKF(x_nom,u_nom,y_nom,y_actual,u_ac
     %
     % Author: Owen Craig
     % Modified: 12/3/2024
-    n = length(y_actual);
+    %% Define constants
     Gamma = eye(size(x_nom,1),size(x_nom,1));
+    du = zeros(size(u_nom,1),1);
+    dy_update = y_actual-y_nom;
+    dy_update(1) = mod(dy_update(1) + pi, 2*pi) - pi;
+    dy_update(3) = mod(dy_update(3) + pi, 2*pi) - pi;
+    n = length(y_actual);
+   
+    
     % Initialize Filter
     x_est(:,1) = x_nom(:,1);
-    P_update = diag([10, 50, pi/1000, 1, 1, pi/1000]);
+    P_update = diag([10, 10, pi/10, 5, 5, pi/10]);
+    
+    % WARM START THE FILTER USING BATCH LLS FOR THE FIRST 4 MEASUREMENTS
+    H_mat = [];
+    for i = 1:4
+        [A, B, C, D] = linearize(x_nom(:,i), u_nom(:,i));
+        [~,G,~,H] = eulerDiscretize(A,B,C,D,Gamma,dt);
+        H_mat = [H_mat;H];
+    end
+    R_mat = kron(eye(n), R);
+    y_reshaped = reshape(y_actual', [], 1);
+    xls  = (H_mat'*R_mat^-1*H_mat)^-1*H_mat'*R_mat^-1*y_reshaped;
+    Pls = (H_mat'*R_mat^-1*H_mat)^-1;
+    P_update = Pls;
+    dx_update = xls-x_nom(:,1);
+    dx_update(3) = mod(dx_update(3) + pi, 2*pi) - pi;
+    dx_update(6) = mod(dx_update(6) + pi, 2*pi) - pi;
+    du = zeros(size(G,2),1);
+    dy_update = y_actual-y_nom;
+    x_est(:,1) = dx_update+x_nom(:,1);
+    sigma(:,1) = sqrt(diag(P_update));
     % Initialize Output Variables
     S_vec = {};
     innovation_vec = [];
     sigma(:,1) = sqrt(diag(P_update));
     dx_update = x_est(:,1)-x_nom(:,1);
-    du = zeros(size(u_nom,1),1);
-    dy_update = y_actual-y_nom;
-    dy_update(1) = mod(dy_update(1) + pi, 2*pi) - pi;
-    dy_update(3) = mod(dy_update(3) + pi, 2*pi) - pi;
+
     % Use the lineraized Kalman Filter to estimate the state
     for i =1:n
         % Pure Predition uses F_k and G_k so calculate @ k

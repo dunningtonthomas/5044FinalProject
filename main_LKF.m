@@ -43,22 +43,31 @@ R_true = Data.Rtrue;
 
 %% Apply Linearized Kalman Filter
 Q_tune = Q_true;
-Q_tune(1,1) = Q_tune(1,1)*1000;
-Q_tune(2,2) = Q_tune(2,2)*1000;
-Q_tune(3,3) = Q_tune(3,3)*0.01;
+Q_tune(1,1) = Q_tune(1,1)*80;
+Q_tune(2,2) = Q_tune(2,2)*80;
+Q_tune(3,3) = Q_tune(3,3)*1000;
 Q_tune(4,4) = Q_tune(4,4)*100;
 Q_tune(5,5) = Q_tune(5,5)*100;
-Q_tune(6,6) = Q_tune(6,6)*0.01;
+Q_tune(6,6) = Q_tune(6,6)*100000;
 Q_tune = Q_tune*100;
 
 
+Q_tune(1,2) = -5/100;
+Q_tune(2,1) = Q_tune(1,2);
 
 
-R_tune = R_true;
 
+Q_tune(4,5) = -1;
+Q_tune(5,4) = Q_tune(4,5);
+
+% Q_tune(4,6) = 1/10;
+% Q_tune(6,4) = Q_tune(4,6);
+% 
+% Q_tune(5,6) = 1/10;
+% Q_tune(6,5) = Q_tune(5,6);
 
 %% Run the LKF
-[x_LKF,sigma,innovation_vec,S_vec]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_tune,R_tune,dt);
+[x_LKF,sigma,innovation_vec,S_vec]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_tune,R_true,dt);
 %[x_LKF,sigma,innovation_vec,S_vec]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',Data.ydata(:,2:end),u_nom_mat',Q_tune,R_true,dt);
 %% Plotting
 % plotSim(t_noise, x_noise_mat, y_noise_mat, '--')
