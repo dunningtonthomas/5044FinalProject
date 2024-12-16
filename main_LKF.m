@@ -43,28 +43,56 @@ R_true = Data.Rtrue;
 
 %% Apply Linearized Kalman Filter
 Q_tune = Q_true;
-Q_tune(1,1) = Q_tune(1,1)*80;
-Q_tune(2,2) = Q_tune(2,2)*80;
-Q_tune(3,3) = Q_tune(3,3)*1000;
-Q_tune(4,4) = Q_tune(4,4)*100;
-Q_tune(5,5) = Q_tune(5,5)*100;
-Q_tune(6,6) = Q_tune(6,6)*100000;
-Q_tune = Q_tune*100;
+Q_tune(1,1) = Q_tune(1,1)*.1;
+Q_tune(2,2) = Q_tune(2,2)*.1;
+Q_tune(3,3) = Q_tune(3,3)*1000000;
+Q_tune(4,4) = Q_tune(4,4)*0.1;
+Q_tune(5,5) = Q_tune(5,5)*0.1;
+Q_tune(6,6) = Q_tune(6,6)*0.00001;
 
 
-Q_tune(1,2) = -5/100;
+Q_tune(1,2) = -6/1000000;
 Q_tune(2,1) = Q_tune(1,2);
 
+Q_tune(1,3) = 1/10000;
+Q_tune(3,1) = Q_tune(1,3);
+
+Q_tune(2,3) = 1/100000;
+Q_tune(3,2) = Q_tune(2,3);
+
+Q_tune(1,4) = 1/100000;
+Q_tune(4,1) = Q_tune(1,4);
+
+Q_tune(1,5) = 1/100000;
+Q_tune(5,1) = Q_tune(1,5);
 
 
-Q_tune(4,5) = -1;
-Q_tune(5,4) = Q_tune(4,5);
+% Q_tune(4,5) = -1/10000;
+% Q_tune(5,4) = Q_tune(4,5);
 
-% Q_tune(4,6) = 1/10;
-% Q_tune(6,4) = Q_tune(4,6);
+
+
+Q_tune = Q_tune.*200000;
+
+
+
+
+
+
+% Q_tune = Q_true;
+% Q_tune(1,1) = Q_tune(1,1)*1500;
+% Q_tune(2,2) = Q_tune(2,2)*1000;
+% Q_tune(3,3) = Q_tune(3,3)*8;
+% Q_tune(4,4) = Q_tune(4,4)*1;
+% Q_tune(5,5) = Q_tune(5,5)*1;
+% Q_tune(6,6) = Q_tune(6,6)*.0001;
+% Q_tune = Q_tune*200000;
 % 
-% Q_tune(5,6) = 1/10;
-% Q_tune(6,5) = Q_tune(5,6);
+% Q_tune(1,2) = -.05;
+% Q_tune(2,1) = Q_tune(1,2);
+% 
+% Q_tune(4,5) = -1/10;
+% Q_tune(5,4) = Q_tune(4,5);
 
 %% Run the LKF
 [x_LKF,sigma,innovation_vec,S_vec]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_tune,R_true,dt);
