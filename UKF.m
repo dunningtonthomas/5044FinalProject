@@ -1,4 +1,4 @@
-function [xhat, P] = UKF(xhat_prev, P_prev, u, y, dt, Q, R, alpha, beta, kappa, n)
+function [xhat, P, innovation, S] = UKF(xhat_prev, P_prev, u, y, dt, Q, R, alpha, beta, kappa, n)
 %UKF Perform a single UKF update step
 % Inputs:
 %   xhat_prev -> Previous state estimate
@@ -63,6 +63,7 @@ for i = 1:2 * n + 1
 
     P_yy = P_yy + weights_cov(i) * (diff2 * diff2');
 end
+S = P_yy;
 
 % Cross-covariance
 P_xy = zeros(n, length(y));
@@ -82,10 +83,10 @@ end
 K = P_xy / P_yy;
 
 % Update state and covariance
-diff3 = y - yhat_pred;
-diff3(1) = mod(diff3(1) + pi, 2*pi) - pi;
-diff3(3) = mod(diff3(3) + pi, 2*pi) - pi;
+innovation = y - yhat_pred;
+innovation(1) = mod(innovation(1) + pi, 2*pi) - pi;
+innovation(3) = mod(innovation(3) + pi, 2*pi) - pi;
 
-xhat = xhat_pred + K * diff3;
+xhat = xhat_pred + K * innovation;
 P = P_pred - K * P_yy * K';
 end
