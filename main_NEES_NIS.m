@@ -39,19 +39,38 @@ R_true = Data.Rtrue;
 
 % Apply Linearized Kalman Filter
 Q_tune = Q_true;
-Q_tune(1,1) = Q_tune(1,1)*80;
-Q_tune(2,2) = Q_tune(2,2)*80;
-Q_tune(3,3) = Q_tune(3,3)*1000;
-Q_tune(4,4) = Q_tune(4,4)*10000;
-Q_tune(5,5) = Q_tune(5,5)*10000;
-Q_tune(6,6) = Q_tune(6,6)*100000;
-Q_tune = Q_tune*10000;
+Q_tune(1,1) = Q_tune(1,1)*.1;
+Q_tune(2,2) = Q_tune(2,2)*.1;
+Q_tune(3,3) = Q_tune(3,3)*1000000;
+Q_tune(4,4) = Q_tune(4,4)*0.1;
+Q_tune(5,5) = Q_tune(5,5)*0.1;
+Q_tune(6,6) = Q_tune(6,6)*0.00001;
 
-Q_tune(1,2) = -5/100;
+
+Q_tune(1,2) = -6/1000000;
 Q_tune(2,1) = Q_tune(1,2);
 
-Q_tune(4,5) = -1;
-Q_tune(5,4) = Q_tune(4,5);
+Q_tune(1,3) = 1/10000;
+Q_tune(3,1) = Q_tune(1,3);
+
+Q_tune(2,3) = 1/100000;
+Q_tune(3,2) = Q_tune(2,3);
+
+Q_tune(1,4) = 1/100000;
+Q_tune(4,1) = Q_tune(1,4);
+
+Q_tune(1,5) = 1/100000;
+Q_tune(5,1) = Q_tune(1,5);
+
+Q_tune(2,4) = 1/100000;
+Q_tune(4,2) = Q_tune(2,4);
+
+Q_tune(2,5) = 1/100000;
+Q_tune(5,2) = Q_tune(2,5);
+
+Q_tune = Q_tune.*200000;
+
+
 
 % Monte Carlo Simulations for NEES and NIS
 Nsim = 50; % Number of Monte Carlo simulations
@@ -63,7 +82,8 @@ nees_values = zeros(Nsim, length(t_nom)-1);
 nis_values = zeros(Nsim, length(t_nom)-1);
 
 % Initialize P 
-P_init = diag([10, 10, pi/100, 1, 1, pi/100]);
+ P_init = diag([1, 1, pi/10, 1, 1, pi/10]);
+
 
 for sim_idx = 1:Nsim
     Sv = chol(P_init,'lower');
@@ -89,6 +109,8 @@ for sim_idx = 1:Nsim
 
         % NIS (normalized innovation error)
         innovation = innovation_vec(:,k);
+        innovation(1) = mod(innovation(1)+pi,2*pi)-pi;
+        innovation(3) = mod(innovation(3)+pi,2*pi)-pi;
         S = S_vec{k};
         nis_values(sim_idx, k) = innovation' * (S \ innovation); % innov' * inv(S_k) * innov
     end
