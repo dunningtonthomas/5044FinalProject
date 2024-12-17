@@ -1,5 +1,5 @@
 %% EKF
-clear; clc
+close all; clear; clc
 Data = load('cooplocalization_finalproj_KFdata.mat');
 
 % Ode values
@@ -32,7 +32,8 @@ n_ind = 1000;
 x_init = x_nom';
 %x_init = xhat_final;
 %P_init = diag([100, 100, 2*pi, 100, 100, 2*pi]);
-P_init = diag([100, 100, pi, 100, 100, pi]);
+%P_init = diag([100, 100, pi, 100, 100, pi]);
+P_init = diag([10, 10, pi/4, 25, 25, pi/4]);
 % P_init = diag([1000, 1000, 2*pi, 1000, 1000, 2*pi]);
 
 % Tune the Q matrix
@@ -40,12 +41,12 @@ P_init = diag([100, 100, pi, 100, 100, pi]);
 % Q_EKF(4,4) = 1000 .* Q_EKF(4,4);
 % Q_EKF(5,5) = 1000 .* Q_EKF(5,5);
 Q_EKF = 1 .*Q;
-% Q_EKF(1,1) = 10000 .* Q_EKF(1,1);
-% Q_EKF(2,2) = 10000 .* Q_EKF(2,2);
-% Q_EKF(3,3) = 100 .* Q_EKF(3,3);
-% Q_EKF(4,4) = 10000 .* Q_EKF(4,4);
-% Q_EKF(5,5) = 10000 .* Q_EKF(5,5);
-% Q_EKF(6,6) = 100 .* Q_EKF(6,6);
+Q_EKF(1,1) = 10 .* Q_EKF(1,1);
+Q_EKF(2,2) = 10 .* Q_EKF(2,2);
+Q_EKF(3,3) = 1 .* Q_EKF(3,3);
+Q_EKF(4,4) = 100 .* Q_EKF(4,4);
+Q_EKF(5,5) = 100 .* Q_EKF(5,5);
+Q_EKF(6,6) = 1 .* Q_EKF(6,6);
 
 % Estimated and covariance matrices
 xhat_mat = zeros(length(x_noise_mat(:,1)), 6);
