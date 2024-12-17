@@ -95,8 +95,8 @@ Q_tune = Q_tune.*200000;
 % Q_tune(5,4) = Q_tune(4,5);
 
 %% Run the LKF
-[x_LKF,sigma,innovation_vec,S_vec]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_tune,R_true,dt);
-%[x_LKF,sigma,innovation_vec,S_vec]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',Data.ydata(:,2:end),u_nom_mat',Q_tune,R_true,dt);
+%[x_LKF,sigma,innovation_vec,S_vec]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',y_noise_mat',u_nom_mat',Q_tune,R_true,dt);
+[x_LKF,sigma,innovation_vec,S_vec]= LKF(x_nom_mat',u_nom_mat',y_nom_mat',Data.ydata(:,2:end),u_nom_mat',Q_tune,R_true,dt);
 %% Plotting
 % plotSim(t_noise, x_noise_mat, y_noise_mat, '--')
 % plotSim(t_nom, x_nom_mat, y_nom_mat, '-')
@@ -185,35 +185,35 @@ set(gcf, 'Position', [100, 100, 1200, 800]); % Adjust figure size
 
 
 %% Plot Estimated States with 2 Sigma Bounds
-% % Create figure
-% figure('Name', 'LKF State Estimates', 'NumberTitle', 'off', 'Color', 'w');
-% plot_num = 1;
-% % Loop to create 3x2 subplot
-% plot_locations = [1, 3, 5, 2, 4, 6];
-% for i = 1:6
-%     subplot(3, 2, plot_locations(plot_num)); % 3 rows, 2 columns
-%     hold on;
-%     % Plot error and bounds
-%     plot(t_noise, x_LKF(i,:)', 'b', 'LineWidth', 1.5, 'DisplayName', 'Estimate'); 
-%     plot(t_noise,  x_LKF(i,:)+2*sigma(i,:), 'r--', 'LineWidth', 1.2, 'DisplayName', '+2\sigma'); 
-%     plot(t_noise,  x_LKF(i,:)-2*sigma(i,:), 'r--', 'LineWidth', 1.2, 'DisplayName', '-2\sigma');
-%     % Add labels and grid
-%     xlabel('Time [s]', 'Interpreter', 'latex', 'FontSize', 15);
-%     ylabel(state_labels{plot_num}, 'Interpreter', 'latex', 'FontSize', 15);
-%     % Add legend for the top right
-%     if(plot_num == 4)
-%         legend('Estimate', '$2 \sigma$ bounds', 'interpreter', 'latex');
-%     end
-%     % Add title
-%     title([state_labels{plot_num}, ' with $\pm 2 \sigma$ Bounds'], 'Interpreter', 'latex', 'FontSize', 15);
-%     % Increment plot number
-%     plot_num = plot_num + 1;
-% end
-% 
-% % Add a global title
-% sgtitle('LKF State Estimates with $\pm 2 \sigma$  Bounds', 'Interpreter', 'latex', 'FontSize', 20);
-% % Global adjustments
-% set(gcf, 'Position', [100, 100, 1200, 800]); % Adjust figure size
+% Create figure
+figure('Name', 'LKF State Estimates', 'NumberTitle', 'off', 'Color', 'w');
+plot_num = 1;
+% Loop to create 3x2 subplot
+plot_locations = [1, 3, 5, 2, 4, 6];
+for i = 1:6
+    subplot(3, 2, plot_locations(plot_num)); % 3 rows, 2 columns
+    hold on;
+    % Plot error and bounds
+    plot(t_noise, x_LKF(i,:)', 'b', 'LineWidth', 1.5, 'DisplayName', 'Estimate'); 
+    plot(t_noise,  x_LKF(i,:)+2*sigma(i,:), 'r--', 'LineWidth', 1.2, 'DisplayName', '+2\sigma'); 
+    plot(t_noise,  x_LKF(i,:)-2*sigma(i,:), 'r--', 'LineWidth', 1.2, 'DisplayName', '-2\sigma');
+    % Add labels and grid
+    xlabel('Time [s]', 'Interpreter', 'latex', 'FontSize', 15);
+    ylabel(state_labels{plot_num}, 'Interpreter', 'latex', 'FontSize', 15);
+    % Add legend for the top right
+    if(plot_num == 4)
+        legend('Estimate', '$2 \sigma$ bounds', 'interpreter', 'latex');
+    end
+    % Add title
+    title([state_labels{plot_num}, ' with $\pm 2 \sigma$ Bounds'], 'Interpreter', 'latex', 'FontSize', 15);
+    % Increment plot number
+    plot_num = plot_num + 1;
+end
+
+% Add a global title
+sgtitle('LKF State Estimates with $\pm 2 \sigma$  Bounds', 'Interpreter', 'latex', 'FontSize', 20);
+% Global adjustments
+set(gcf, 'Position', [100, 100, 1200, 800]); % Adjust figure size
 
 %% Plot Innovation
 % State labels
